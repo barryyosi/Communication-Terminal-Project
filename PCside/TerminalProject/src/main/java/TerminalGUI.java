@@ -4,16 +4,19 @@ import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.ArrayList;
 
 
 public class TerminalGUI {
     JFrame terminalFrame;
+    CardLayout cardLayout;
     JPanel SleepModePanel;
     JPanel ChatModePanel;
     JPanel FileTransferPanel;
     JPanel TerminalConfigPanel;
     JMenuBar menuBar;
-    JTextArea textArea;
+
     JTextPane textPane;
 
     public static final String PC = "PC";
@@ -21,9 +24,11 @@ public class TerminalGUI {
 
     private void initTerminalGUI() {
         //bCreating the Frame
+
         terminalFrame = new JFrame("Terminal");
         terminalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         terminalFrame.setSize(400, 400);
+        cardLayout = new CardLayout();
 
         // Creating the MenuBar and adding components
         menuBar = new JMenuBar();
@@ -31,10 +36,37 @@ public class TerminalGUI {
         menuBar.add(m1);
 
         JMenuItem m11 = new JMenuItem("Sleep mode");
+        m11.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchPane(SleepModePanel);
+            }
+        });
+
         JMenuItem m12 = new JMenuItem("Chat mode");
+        m12.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchPane(ChatModePanel);
+            }
+        });
+
         JMenuItem m13 = new JMenuItem("File Transfer mode");
+        m13.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchPane(FileTransferPanel);
+            }
+        });
+
         JMenuItem m14 = new JMenuItem("Terminal Configuration mode");
-        JMenuItem m15 = new JMenuItem("Reset MCU");
+        m14.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchPane(TerminalConfigPanel);
+            }
+        });
+
         m1.add(m11);
         m1.add(m12);
         m1.add(m13);
@@ -46,39 +78,82 @@ public class TerminalGUI {
         FileTransferPanel = new JPanel();    // the panel is not visible in output
         TerminalConfigPanel = new JPanel();  // the panel is not visible in output
 
-        initSleepModePanel();
-        // Adding Components to the frame.
         terminalFrame.getContentPane().add(BorderLayout.NORTH, menuBar);
+
+
+        initChatModePanel();
+        initFileTransferModePanel();
+//        initTerinalConfigModePanel();
+        initSleepModePanel();
         terminalFrame.getContentPane().add(BorderLayout.CENTER, SleepModePanel);
+        terminalFrame.getContentPane().getComponent(1).setVisible(true);
+
+
+
+
+
+//        // Adding Components to the frame.
+
 //        terminalFrame.getContentPane().add(BorderLayout.CENTER, textArea);
 //        chatPrint(PC,"barry is the king");
 
     }
 
     private void initChatModePanel(){
-
+        JTextArea textArea = new JTextArea(30, 30);
         JLabel label = new JLabel("Enter Message");
         JTextField textField = new JTextField(15); // accepts upto 15 characters
         JButton send = new JButton("Send");
-        JButton reset = new JButton("Reset");
-        textPane = new JTextPane();
+        send.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                chatPrint(textArea,PC, textField.getText());
+                textField.setText("");
+            }
+        });
+
+        JButton reset = new JButton("Remove chat");
+        reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textArea.setText("");
+            }
+        });
+
 
         ChatModePanel.add(label);                           // Components Added using Flow Layout
         ChatModePanel.add(textField);
-        ChatModePanel.add(textPane);
         ChatModePanel.add(send);
         ChatModePanel.add(reset);
+        ChatModePanel.add(BorderLayout.NORTH,textArea);
 
-        // Text Area at the Center
-        textArea = new JTextArea();
     }
+    private void initFileTransferModePanel(){
+        JTextArea textArea1 = new JTextArea(30, 30);
+        JTextArea textArea2 = new JTextArea(30, 30);
+        JButton loadFiles = new JButton("Load files");
 
+        File[] terminalFiles = Terminal.files.toArray(new File[0]);
+        JList<File> fileJList = new JList(terminalFiles);
+        fileJList.setPreferredSize(new Dimension(200, 200));
+        loadFiles.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (File file : terminalFiles) {
+                    chatPrint(textArea1 ,PC, file.toString());
+                }
+            }
+        });
+        FileTransferPanel.add(loadFiles);
+        FileTransferPanel.add(fileJList);
+        FileTransferPanel.add(textArea2);
+    }
     private void initSleepModePanel(){
         JButton ChatModeButton = new JButton("Chat Mode");
         ChatModeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                switchPane(ChatModePanel);
             }
         });
 
@@ -86,7 +161,7 @@ public class TerminalGUI {
         FileTransferButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                switchPane(FileTransferPanel);
             }
         });
 
@@ -94,7 +169,7 @@ public class TerminalGUI {
         TerminalConfigButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                switchPane(TerminalConfigPanel);
             }
         });
 
@@ -102,39 +177,28 @@ public class TerminalGUI {
         SleepModePanel.add(FileTransferButton);
         SleepModePanel.add(TerminalConfigButton);
     }
-    private void chatPrint(String messageCommitter, String msg) {
-        textArea.append( messageCommitter + ": " + msg +"\n");
+    private void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
+        argTextArea.append( messageCommitter + ": " + msg +"\n");
     }
 
     public TerminalGUI() {
 
         initTerminalGUI();
-
         terminalFrame.setVisible(true);
 
     }
 
-    public void changePane(Terminal.State argState) {
-        switch (argState) {
-            case Sleep: {
+    public void switchPane(JPanel argPanel) {
 
-            }
-            break;
-            case Chat: {
-                // TODO - implement
-                // sysPort.serialRead();
-            }
-            break;
+        terminalFrame.getContentPane().removeAll();
+        terminalFrame.repaint();
+        terminalFrame.revalidate();
+        terminalFrame.getContentPane().add(BorderLayout.NORTH, menuBar);
+        terminalFrame.getContentPane().add(BorderLayout.CENTER, argPanel);
+        terminalFrame.getContentPane().getComponent(1).setVisible(true);
+        terminalFrame.repaint();
+        terminalFrame.revalidate();
 
-            case FileTransfer:
-                // TODO - implement
-
-            case TerminalConfig: {
-                // TODO - pick port using gui
-                // TODO - set baudRate using gui - port.setBaudRate(baud);
-                Terminal.sysState = Terminal.State.Sleep;
-            }
-            break;
         }
-    }
+
 }

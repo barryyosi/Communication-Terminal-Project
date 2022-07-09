@@ -1,17 +1,22 @@
 import com.fazecast.jSerialComm.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class Terminal {
-    public enum State {Sleep, Chat, FileTransfer, TerminalConfig }
-    public static State sysState = State.Sleep;
     private static SerialPort sysPort;
-
     private InputStream inputStream;
     private OutputStream outputStream;
+
+    public enum State {Sleep, Chat, FileTransfer, TerminalConfig }
+    public static State sysState = State.Sleep;
+    public static File filesDir = new File("src/main/Files");
+    public static ArrayList<File> files = new ArrayList<File>(Arrays.asList(filesDir.listFiles()));
     // TODO - finalize this method.
     public static SerialPort getSerialPort(){
         final SerialPort[] availablePorts = SerialPort.getCommPorts();
@@ -47,6 +52,7 @@ public class Terminal {
 
 //        final SerialPort port = getSerialPort();
 //        initNewSerialPort(port.getDescriptivePortName(), 9600, 8,1);
+        System.out.println(files);
         TerminalGUI gui = new TerminalGUI();
 
         while(true){

@@ -6,8 +6,8 @@ import java.io.OutputStream;
 
 
 public class Terminal {
-    private enum State {Sleep, Chat, FileTransfer, TerminalConfig }
-    private static State sysState = State.Sleep;
+    public enum State {Sleep, Chat, FileTransfer, TerminalConfig }
+    public static State sysState = State.Sleep;
     private static SerialPort sysPort;
 
     private InputStream inputStream;
@@ -33,28 +33,29 @@ public class Terminal {
     // TODO - Finalize this method.
     public static void initNewSerialPort(String name, int baud, int dataBits, int stopBits){
         if (sysPort != null && sysPort.isOpen()) {
-            closePort();
+            //closePort();
         }
         sysPort = SerialPort.getCommPort(name);
         sysPort.setParity(SerialPort.NO_PARITY);
         sysPort.setNumStopBits(stopBits);
         sysPort.setNumDataBits(dataBits);
         sysPort.setBaudRate(baud);
-        sysPort.addDataListener(this);
+        //sysPort.addDataListener(this);
     }
 
     public static void main(String[] args) throws IOException {
 
-        final SerialPort port = getSerialPort();
-        initNewSerialPort(port.getDescriptivePortName(), 9600, 8,1);
-         
+//        final SerialPort port = getSerialPort();
+//        initNewSerialPort(port.getDescriptivePortName(), 9600, 8,1);
+        TerminalGUI gui = new TerminalGUI();
+
         while(true){
 
             switch (sysState){
 
                 case Chat: {
                     // TODO - implement
-                    sysPort.serialRead();
+                    // sysPort.serialRead();
                 }break;
 
                 case FileTransfer:

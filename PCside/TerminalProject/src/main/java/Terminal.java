@@ -13,10 +13,12 @@ public class Terminal {
     private InputStream inputStream;
     private OutputStream outputStream;
 
+    //public static SerialPort[] ports = SerialPort.getCommPorts();
     public enum State {Sleep, Chat, FileTransfer, TerminalConfig }
     public static State sysState = State.Sleep;
     public static File filesDir = new File("src/main/Files");
-    public static ArrayList<File> files = new ArrayList<File>(Arrays.asList(filesDir.listFiles()));
+    public static ArrayList<File> pcFiles = new ArrayList<File>(Arrays.asList(filesDir.listFiles()));
+    public static ArrayList<File> mcuFiles = new ArrayList<File>();
     // TODO - finalize this method.
     public static SerialPort getSerialPort(){
         final SerialPort[] availablePorts = SerialPort.getCommPorts();
@@ -47,12 +49,15 @@ public class Terminal {
         sysPort.setBaudRate(baud);
         //sysPort.addDataListener(this);
     }
-
+    // TODO - Implement this.
+    public void sendFile(File argFile){}
+    // TODO - Implement this.
+    public void recvFile(){}
     public static void main(String[] args) throws IOException {
 
 //        final SerialPort port = getSerialPort();
 //        initNewSerialPort(port.getDescriptivePortName(), 9600, 8,1);
-        System.out.println(files);
+
         TerminalGUI gui = new TerminalGUI();
 
         while(true){

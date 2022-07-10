@@ -1,3 +1,5 @@
+import com.fazecast.jSerialComm.SerialPort;
+
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -6,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class TerminalGUI {
@@ -83,7 +86,7 @@ public class TerminalGUI {
 
         initChatModePanel();
         initFileTransferModePanel();
-//        initTerinalConfigModePanel();
+        initTerminalConfigModePanel();
         initSleepModePanel();
         terminalFrame.getContentPane().add(BorderLayout.CENTER, SleepModePanel);
         terminalFrame.getContentPane().getComponent(1).setVisible(true);
@@ -98,7 +101,6 @@ public class TerminalGUI {
 //        chatPrint(PC,"barry is the king");
 
     }
-
     private void initChatModePanel(){
         JTextArea textArea = new JTextArea(30, 30);
         JLabel label = new JLabel("Enter Message");
@@ -129,24 +131,117 @@ public class TerminalGUI {
 
     }
     private void initFileTransferModePanel(){
-        JTextArea textArea1 = new JTextArea(30, 30);
-        JTextArea textArea2 = new JTextArea(30, 30);
-        JButton loadFiles = new JButton("Load files");
+bu
+        var pcFiles = Terminal.pcFiles.toArray(new File[0]);
+        var mcuFiles = Terminal.mcuFiles.toArray(new File[0]);
 
-        File[] terminalFiles = Terminal.files.toArray(new File[0]);
-        JList<File> fileJList = new JList(terminalFiles);
-        fileJList.setPreferredSize(new Dimension(200, 200));
-        loadFiles.addActionListener(new ActionListener() {
+        DefaultListModel<File> pcf = new DefaultListModel();
+        for (File file : pcFiles) {
+            pcf.addElement(file);
+        }
+
+        DefaultListModel<File> mcuf = new DefaultListModel();
+        for (File file : mcuFiles) {
+            pcf.addElement(file);
+        }
+
+
+        JList<File> pcFileJList = new JList(pcf);
+        pcFileJList.setPreferredSize(new Dimension(200, 200));
+
+        JList<File> mcuFileJList = new JList(mcuf);
+        mcuFileJList.setPreferredSize(new Dimension(200, 200));
+
+
+        JButton reloadFiles = new JButton("Load files");
+        reloadFiles.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (File file : terminalFiles) {
-                    chatPrint(textArea1 ,PC, file.toString());
-                }
+
+                // TODO - Implement reloading files
             }
         });
-        FileTransferPanel.add(loadFiles);
-        FileTransferPanel.add(fileJList);
-        FileTransferPanel.add(textArea2);
+
+        Box transferBox = Box.createVerticalBox();
+
+        JButton moveToPC = new JButton("<<");
+        moveToPC.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                var selected = mcuFileJList.getSelectedValuesList();
+                for (File file : selected){;
+                    if (pcf.contains(file))
+                        JOptionPane.showMessageDialog(null, "File already exist in PC");
+                    else
+                        pcf.addElement(file);
+                }
+//
+                // TODO - Implement actual file transfer using UART
+
+            }
+        });
+        JButton moveToMCU = new JButton(">>");
+        moveToMCU.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                var selected = pcFileJList.getSelectedValuesList();
+                for (File file : selected){
+                    if (mcuf.contains(file))
+                        JOptionPane.showMessageDialog(null, "File already exist in MCU");
+                    else
+                        mcuf.addElement(file);
+                    // TODO - Implement actual file transfer using UART
+                }
+
+            }
+        });
+
+        JButton removeFromMCU = new JButton("-");
+        removeFromMCU.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                var selected = mcuFileJList.getSelectedValuesList();
+                if(selected.isEmpty())
+                    JOptionPane.showMessageDialog(null, "Pick files to remove from MCU");
+                else {
+                    for (File file : selected) {
+                        mcuf.removeElement(file);
+                        JOptionPane.showMessageDialog(null, "File removed from MCU");
+                        // TODO - Implement actual file transfer using UART
+                    }
+                }
+
+            }
+        });
+
+        transferBox.add(moveToPC);
+        transferBox.add(moveToMCU);
+        transferBox.add(removeFromMCU);
+
+
+        FileTransferPanel.add(reloadFiles);
+        FileTransferPanel.add(pcFileJList);
+//        FileTransferPanel.add(BorderLayout.CENTER,moveToPC);
+//        FileTransferPanel.add(BorderLayout.NORTH ,moveToMCU);
+        FileTransferPanel.add(transferBox);
+        FileTransferPanel.add(mcuFileJList);
+
+    }
+    private void initTerminalConfigModePanel(){
+        String[] baudRates = {"2400", "9600", "19200", "38400"};
+//        SerialPort[] coms = (SerialPort[]) Arrays.stream(Terminal.ports).toArray();
+        String[] coms = {"COM3", "COM4", "COM5"};
+
+        JLabel baudLabel = new JLabel("Baud rate");
+        JComboBox baudBox = new JComboBox<>(baudRates);
+
+        JLabel comsLabel = new JLabel("COM");
+        JComboBox comsBox = new JComboBox<>(coms);
+
+        TerminalConfigPanel.add(baudLabel);
+        TerminalConfigPanel.add(baudBox);
+        TerminalConfigPanel.add(comsLabel);
+        TerminalConfigPanel.add(comsBox);
     }
     private void initSleepModePanel(){
         JButton ChatModeButton = new JButton("Chat Mode");

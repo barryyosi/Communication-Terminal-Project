@@ -131,7 +131,7 @@ public class TerminalGUI {
 
     }
     private void initFileTransferModePanel(){
-bu
+
         var pcFiles = Terminal.pcFiles.toArray(new File[0]);
         var mcuFiles = Terminal.mcuFiles.toArray(new File[0]);
 

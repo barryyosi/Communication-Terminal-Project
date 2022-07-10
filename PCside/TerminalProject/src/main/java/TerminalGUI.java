@@ -135,23 +135,30 @@ public class TerminalGUI {
         var pcFiles = Terminal.pcFiles.toArray(new File[0]);
         var mcuFiles = Terminal.mcuFiles.toArray(new File[0]);
 
+        Box pcFilesBox = Box.createVerticalBox();
+        JLabel pcLabel = new JLabel("PC Files");
         DefaultListModel<File> pcf = new DefaultListModel();
         for (File file : pcFiles) {
             pcf.addElement(file);
         }
+        JList<File> pcFileJList = new JList(pcf);
+        pcFileJList.setPreferredSize(new Dimension(850, 200));
 
+        pcFilesBox.add(pcLabel);
+        pcFilesBox.add(pcFileJList);
+
+        Box mcuFilesBox = Box.createVerticalBox();
+        JLabel mcuLabel = new JLabel("MCU Files");
         DefaultListModel<File> mcuf = new DefaultListModel();
         for (File file : mcuFiles) {
             pcf.addElement(file);
         }
 
-
-        JList<File> pcFileJList = new JList(pcf);
-        pcFileJList.setPreferredSize(new Dimension(200, 200));
-
         JList<File> mcuFileJList = new JList(mcuf);
-        mcuFileJList.setPreferredSize(new Dimension(200, 200));
+        mcuFileJList.setPreferredSize(new Dimension(850, 200));
 
+        mcuFilesBox.add(mcuLabel);
+        mcuFilesBox.add(mcuFileJList);
 
         JButton reloadFiles = new JButton("Load files");
         reloadFiles.addActionListener(new ActionListener() {
@@ -196,7 +203,7 @@ public class TerminalGUI {
             }
         });
 
-        JButton removeFromMCU = new JButton("-");
+        JButton removeFromMCU = new JButton(" - ");
         removeFromMCU.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -220,28 +227,74 @@ public class TerminalGUI {
 
 
         FileTransferPanel.add(reloadFiles);
-        FileTransferPanel.add(pcFileJList);
+        FileTransferPanel.add(pcFilesBox);
 //        FileTransferPanel.add(BorderLayout.CENTER,moveToPC);
 //        FileTransferPanel.add(BorderLayout.NORTH ,moveToMCU);
         FileTransferPanel.add(transferBox);
-        FileTransferPanel.add(mcuFileJList);
+        FileTransferPanel.add(mcuFilesBox);
 
     }
     private void initTerminalConfigModePanel(){
+
+        // BaudRate and port to be configured to the Serial Port
+        Integer selectedBaud = 9600;    // Default baud is set.
+        SerialPort selectedPort = Terminal.sysPort;
         String[] baudRates = {"2400", "9600", "19200", "38400"};
-//        SerialPort[] coms = (SerialPort[]) Arrays.stream(Terminal.ports).toArray();
-        String[] coms = {"COM3", "COM4", "COM5"};
 
-        JLabel baudLabel = new JLabel("Baud rate");
-        JComboBox baudBox = new JComboBox<>(baudRates);
+        SerialPort[] coms = Terminal.availablePorts;
 
-        JLabel comsLabel = new JLabel("COM");
-        JComboBox comsBox = new JComboBox<>(coms);
 
-        TerminalConfigPanel.add(baudLabel);
-        TerminalConfigPanel.add(baudBox);
-        TerminalConfigPanel.add(comsLabel);
-        TerminalConfigPanel.add(comsBox);
+        JLabel comLabel = new JLabel("COM ");
+        JComboBox comDropdown = new JComboBox<>(coms);
+        comDropdown.setSize(comDropdown.getPreferredSize());
+        comDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                // TODO - Implement reloading files
+            }
+        });
+
+        JLabel baudLabel = new JLabel("Baud rate ");
+        JComboBox baudDropdown = new JComboBox<String>(baudRates);
+        baudDropdown.setSize(comDropdown.getPreferredSize());
+        baudDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        JButton configButton = new JButton("Config");
+        configButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Terminal.sysPort = (SerialPort) comDropdown.getSelectedItem();
+                Terminal.sysBaudRate = Integer.parseInt((String)baudDropdown.getSelectedItem());
+
+                JOptionPane.showMessageDialog(null, "Communication port and baud rate updated.");
+                Terminal.initNewSerialPort(Terminal.sysBaudRate);
+            }
+        });
+
+        Box baudBox = Box.createHorizontalBox();
+        Box comBox = Box.createHorizontalBox();
+
+        Box terminalConfigBox = Box.createVerticalBox();
+
+        terminalConfigBox.add(baudBox);
+        terminalConfigBox.add(comBox);
+        terminalConfigBox.add(configButton);
+
+        baudBox.add(baudLabel);
+        baudBox.add(baudDropdown);
+
+        comBox.add(comLabel);
+        comBox.add(comDropdown);
+//        TerminalConfigPanel.add(baudLabel);
+//        TerminalConfigPanel.add(baudBox);
+//        TerminalConfigPanel.add(comsLabel);
+//        TerminalConfigPanel.add(comsBox);
+        TerminalConfigPanel.add(terminalConfigBox);
     }
     private void initSleepModePanel(){
         JButton ChatModeButton = new JButton("Chat Mode");
@@ -274,6 +327,7 @@ public class TerminalGUI {
     }
     private void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
         argTextArea.append( messageCommitter + ": " + msg +"\n");
+
     }
 
     public TerminalGUI() {

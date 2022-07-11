@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
+// TODO - Implement receive method.
 public class Terminal {
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
@@ -22,25 +22,12 @@ public class Terminal {
     public enum State {Sleep, Chat, FileTransfer, TerminalConfig }
     public static State sysState = State.Sleep;
 
+    // TODO - Make filesDir more OS generic
     public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
     public static File[] listOfFiles = filesDir.listFiles();
     public static ArrayList<File> pcFiles = new ArrayList<File>(Arrays.stream(listOfFiles).toList());
     public static ArrayList<File> mcuFiles = new ArrayList<File>();
 
-    // TODO - finalize this method.
-    public static void getSerialPort(){
-
-        //        for (SerialPort port : ports){
-//            if(port.friendlyName == "UARTXXXSHIT"){
-//
-//            }
-//        }
-//          https://fazecast.github.io/jSerialComm/
-        System.out.println();
-
-    }
-
-    // TODO - Finalize this method.
     public static void initNewSerialPort(int baud){
         if (sysPort != null && sysPort.isOpen()) {
             //closePort();
@@ -51,27 +38,41 @@ public class Terminal {
         sysPort.setBaudRate(baud);
         String message = sysPort.toString() + " connected with baud-rate: " + baud + ", stop-bits: " + STOP_BITS + ", data-bits: " + DATA_BITS + " and no-parity.";
         JOptionPane.showMessageDialog(null, message);
+        sysPort.closePort();
+        sysPort.openPort();
 
     }
+
     // TODO - Implement this.
     public void sendFile(File argFile){}
     // TODO - Implement this.
     public void recvFile(){}
+    public static void sendFrame(String msg){
+        byte[] frame;
+        Integer stateOrdinal = sysState.ordinal();      // Each message syncs system state with MCU
+        String frameString = stateOrdinal.toString() + msg;
+        frame = frameString.getBytes();
+
+        sysPort.writeBytes(frame, frame.length);
+        // TODO - Implement Ack receive.
+        // while(sysPort.readBytes){}
+    }
     public static void main(String[] args) throws IOException {
-//        sysPort = SerialPort.getCommPort("PEMicro/Freescale - CDC Serial Port");
+
+        // TerminalGUI gui = new TerminalGUI();
         sysPort = SerialPort.getCommPort("COM6");
         initNewSerialPort(9600);
-        byte[] msg = {'b','a','r','r'};
-        sysPort.closePort();
         var a = sysPort.getDeviceWriteBufferSize();
-        sysPort.openPort();
-        sysPort.writeBytes(msg, 4);
+        // Sync message
+        sendFrame("");
+
+        //sysPort.writeBytes(msg, 4);
 //        var b = sysPort.getOutputStream();
 //        b.write(msg);
 //        while(true)
 
 
-//        TerminalGUI gui = new TerminalGUI();
+//
 
 //        while(true){
 //

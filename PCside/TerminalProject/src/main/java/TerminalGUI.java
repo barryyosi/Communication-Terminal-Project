@@ -13,27 +13,22 @@ import java.util.Arrays;
 
 public class TerminalGUI {
     JFrame terminalFrame;
-    CardLayout cardLayout;
     JPanel SleepModePanel;
     JPanel ChatModePanel;
     JPanel FileTransferPanel;
     JPanel TerminalConfigPanel;
     JMenuBar menuBar;
 
-    JTextPane textPane;
-
     public static final String PC = "PC";
     public static final String MCU = "MCU";
 
     private void initTerminalGUI() {
-        //bCreating the Frame
-
+        // JFrame initialization.
         terminalFrame = new JFrame("Terminal");
         terminalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         terminalFrame.setSize(400, 400);
-        cardLayout = new CardLayout();
 
-        // Creating the MenuBar and adding components
+        // Creating the MenuBar and adding menu items.
         menuBar = new JMenuBar();
         JMenu m1 = new JMenu("Switch mode");
         menuBar.add(m1);
@@ -43,6 +38,8 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPane(SleepModePanel);
+                Terminal.sysState = Terminal.State.Sleep;
+
             }
         });
 
@@ -51,6 +48,7 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPane(ChatModePanel);
+                Terminal.sysState = Terminal.State.Chat;
             }
         });
 
@@ -59,6 +57,8 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPane(FileTransferPanel);
+                Terminal.sysState = Terminal.State.FileTransfer;
+
             }
         });
 
@@ -67,6 +67,8 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPane(TerminalConfigPanel);
+                Terminal.sysState = Terminal.State.TerminalConfig;
+
             }
         });
 
@@ -75,36 +77,31 @@ public class TerminalGUI {
         m1.add(m13);
         m1.add(m14);
 
-        // Creating the panel at bottom and adding components
-        SleepModePanel = new JPanel();       // the panel is not visible in output
-        ChatModePanel = new JPanel();        // the panel is not visible in output
-        FileTransferPanel = new JPanel();    // the panel is not visible in output
-        TerminalConfigPanel = new JPanel();  // the panel is not visible in output
+        // Creating mode panels adding relevant components.
+        SleepModePanel = new JPanel();
+        ChatModePanel = new JPanel();
+        FileTransferPanel = new JPanel();
+        TerminalConfigPanel = new JPanel();
 
         terminalFrame.getContentPane().add(BorderLayout.NORTH, menuBar);
 
-
+        // Initializing each mode panel.
         initChatModePanel();
         initFileTransferModePanel();
         initTerminalConfigModePanel();
         initSleepModePanel();
+
+        // SleepMode panel appears on start up.
         terminalFrame.getContentPane().add(BorderLayout.CENTER, SleepModePanel);
         terminalFrame.getContentPane().getComponent(1).setVisible(true);
 
-
-
-
-
-//        // Adding Components to the frame.
-
-//        terminalFrame.getContentPane().add(BorderLayout.CENTER, textArea);
-//        chatPrint(PC,"barry is the king");
-
     }
     private void initChatModePanel(){
+        // Creating chat mode panel and adding relevant components.
         JTextArea textArea = new JTextArea(30, 30);
         JLabel label = new JLabel("Enter Message");
         JTextField textField = new JTextField(15); // accepts upto 15 characters
+
         JButton send = new JButton("Send");
         send.addActionListener(new ActionListener() {
             @Override
@@ -123,7 +120,7 @@ public class TerminalGUI {
         });
 
 
-        ChatModePanel.add(label);                           // Components Added using Flow Layout
+        ChatModePanel.add(label);
         ChatModePanel.add(textField);
         ChatModePanel.add(send);
         ChatModePanel.add(reset);
@@ -132,31 +129,25 @@ public class TerminalGUI {
     }
     private void initFileTransferModePanel(){
 
+        // Creating file transfer mode panel and adding relevant components.
         var pcFiles = Terminal.pcFiles.toArray(new File[0]);
         var mcuFiles = Terminal.mcuFiles.toArray(new File[0]);
 
         Box pcFilesBox = Box.createVerticalBox();
         JLabel pcLabel = new JLabel("PC Files");
         DefaultListModel<File> pcf = new DefaultListModel();
-        for (File file : pcFiles) {
-            pcf.addElement(file);
-        }
+        for (File file : pcFiles) { pcf.addElement(file); }
         JList<File> pcFileJList = new JList(pcf);
         pcFileJList.setPreferredSize(new Dimension(850, 200));
-
         pcFilesBox.add(pcLabel);
         pcFilesBox.add(pcFileJList);
 
         Box mcuFilesBox = Box.createVerticalBox();
         JLabel mcuLabel = new JLabel("MCU Files");
         DefaultListModel<File> mcuf = new DefaultListModel();
-        for (File file : mcuFiles) {
-            pcf.addElement(file);
-        }
-
+        for (File file : mcuFiles) { pcf.addElement(file); }
         JList<File> mcuFileJList = new JList(mcuf);
         mcuFileJList.setPreferredSize(new Dimension(850, 200));
-
         mcuFilesBox.add(mcuLabel);
         mcuFilesBox.add(mcuFileJList);
 
@@ -170,7 +161,6 @@ public class TerminalGUI {
         });
 
         Box transferBox = Box.createVerticalBox();
-
         JButton moveToPC = new JButton("<<");
         moveToPC.addActionListener(new ActionListener() {
             @Override
@@ -225,44 +215,25 @@ public class TerminalGUI {
         transferBox.add(moveToMCU);
         transferBox.add(removeFromMCU);
 
-
         FileTransferPanel.add(reloadFiles);
         FileTransferPanel.add(pcFilesBox);
-//        FileTransferPanel.add(BorderLayout.CENTER,moveToPC);
-//        FileTransferPanel.add(BorderLayout.NORTH ,moveToMCU);
         FileTransferPanel.add(transferBox);
         FileTransferPanel.add(mcuFilesBox);
 
     }
-    private void initTerminalConfigModePanel(){
+    private void initTerminalConfigModePanel() {
 
-        // BaudRate and port to be configured to the Serial Port
-        Integer selectedBaud = 9600;    // Default baud is set.
-        SerialPort selectedPort = Terminal.sysPort;
+        // Available baud rates and com ports.
         String[] baudRates = {"2400", "9600", "19200", "38400"};
-
         SerialPort[] coms = Terminal.availablePorts;
-
 
         JLabel comLabel = new JLabel("COM ");
         JComboBox comDropdown = new JComboBox<>(coms);
         comDropdown.setSize(comDropdown.getPreferredSize());
-        comDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                // TODO - Implement reloading files
-            }
-        });
 
         JLabel baudLabel = new JLabel("Baud rate ");
         JComboBox baudDropdown = new JComboBox<String>(baudRates);
         baudDropdown.setSize(comDropdown.getPreferredSize());
-        baudDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
 
         JButton configButton = new JButton("Config");
         configButton.addActionListener(new ActionListener() {
@@ -272,10 +243,12 @@ public class TerminalGUI {
                 Terminal.sysBaudRate = Integer.parseInt((String)baudDropdown.getSelectedItem());
 
                 JOptionPane.showMessageDialog(null, "Communication port and baud rate updated.");
-                Terminal.initNewSerialPort(Terminal.sysBaudRate);
+                Terminal.initNewSerialPort(Terminal.sysBaudRate);   // Configuring a new serial port based on selected
+                                                                    // parameters.
             }
         });
 
+        // Aligning dropdowns with labels and within each other.
         Box baudBox = Box.createHorizontalBox();
         Box comBox = Box.createHorizontalBox();
 
@@ -290,10 +263,6 @@ public class TerminalGUI {
 
         comBox.add(comLabel);
         comBox.add(comDropdown);
-//        TerminalConfigPanel.add(baudLabel);
-//        TerminalConfigPanel.add(baudBox);
-//        TerminalConfigPanel.add(comsLabel);
-//        TerminalConfigPanel.add(comsBox);
         TerminalConfigPanel.add(terminalConfigBox);
     }
     private void initSleepModePanel(){
@@ -302,6 +271,7 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPane(ChatModePanel);
+                Terminal.sysState = Terminal.State.Chat;
             }
         });
 
@@ -310,6 +280,8 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPane(FileTransferPanel);
+                Terminal.sysState = Terminal.State.FileTransfer;
+
             }
         });
 
@@ -318,6 +290,8 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPane(TerminalConfigPanel);
+                Terminal.sysState = Terminal.State.TerminalConfig;
+
             }
         });
 
@@ -327,9 +301,9 @@ public class TerminalGUI {
     }
     private void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
         argTextArea.append( messageCommitter + ": " + msg +"\n");
-
+        if(messageCommitter == PC)
+            Terminal.sendFrame(msg);
     }
-
     public TerminalGUI() {
 
         initTerminalGUI();

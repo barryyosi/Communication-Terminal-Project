@@ -9,21 +9,60 @@
 #define CORE_CLOCK 48000000
 #define MAX_STRING 1000
 
-
-//put/get char()
 uint8_t string1[31];
 char readStr[MAX_STRING] = {0};
 char printStr[MAX_STRING] = {0};
 int readStr_index = 0;
 int printStr_in_index = 0;
 int printStr_out_index = 0;
-int l = 0;
-char errorMsg[] = "try again\r\n";
+
+// TODO - validate
+int readState = 0;
+int readMessageSize = 0;
+int readMessage = 0;
+int messageSize;
+char[] message = {0};
+char* pMessage;
+
 
 void UART0_IRQHandler(){
     static int intInput;
     if( UART0_S1 & UART_S1_RDRF_MASK ){ // RX buffer is full and ready for reading
+
 	    printStr[printStr_in_index++] = readStr[readStr_index++] = UART0_D;
+        // 1st implementation option - receving header bytes: systameState, message size
+        if (!readState){
+            if(sysState != atoi(UART0_D)){
+                exitState(sysState);
+                sysState = atoi(UART0_D);
+                enterState(sysState);
+            }
+            else
+                readState = 1;
+            
+        }
+        else if (!readMessageSize)
+        {
+            messageSize = atoi(UART0_D);
+            pMessage = (char*)malloc(messageSize);
+            readMessageSize = 1;
+        }else
+        {
+            static int currentlyReceivedBytes = 0;
+            if(currentlyReceivedBytes < messageSize)
+                pMessage[currentlyReceivedBytes++] = UART0_D;
+            else{
+                currentlyReceivedBytes = 0;
+                readState = 0;
+                readMessageSize = 0;
+                readStr = *(pMessage);
+                free(pMessage);
+            }
+        }
+        
+        
+
+        // 2nd implementation option - incase message is terminated with /r or /n.
 	    if (readStr[readStr_index-1] == '\r'){
             printStr[printStr_in_index++]   = readStr[readStr_index++]  = '\n';
             readStr_index = 0;

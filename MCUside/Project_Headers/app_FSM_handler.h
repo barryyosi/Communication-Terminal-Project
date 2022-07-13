@@ -10,9 +10,9 @@ void handleStateChangeIfNeeded();
 void enterState(FSMstate state);
 void exitState(FSMstate state);
 
-
+void updateState(FSMstate argState);
+void setState(FSMstate argState);
 FSMstate getState();
-void setNewState(int newState);
 
 int getX();
 void setX(int newX);

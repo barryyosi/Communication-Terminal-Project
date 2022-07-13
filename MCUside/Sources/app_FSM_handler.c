@@ -28,26 +28,17 @@ int getDownCountAndDecr(){return downCount--;}
 
 void resetUpCount(){upCount = 0;}
 void resetDownCount(){downCount = 65535;}*/
-/*
-// void handleStateChangeIfNeeded(){
-//     if(g_state == g_newState) return;
 
-//     exitState(g_state);
-//     g_state = g_newState;
-//     enterState(g_state);
-// }
-*/
-/*
-void setNewState(int newState){
-    if(0 <= newState && newState < numOfStates)
-        g_newState = newState;
-    else
-        while (1);
 
-}
-*/
-FSMstate getState(){
-    return sysState;
+void setState(FSMstate argState){ sysState = argState;}
+
+FSMstate getState(){ return sysState; }
+
+void updateState(FSMstate argState){
+    if(getState() != argState)
+    	exitState(getState());
+        setState(argState);
+        enterState(argState);
 }
 
 void enterState(FSMstate state){

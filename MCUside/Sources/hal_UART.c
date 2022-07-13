@@ -8,6 +8,7 @@
 #define SDA_SERIAL_BAUD 9600
 #define CORE_CLOCK 48000000
 #define MAX_STRING 1000
+#define MAX_MSG 32
 
 uint8_t string1[31];
 char readStr[MAX_STRING] = {0};
@@ -18,24 +19,104 @@ int printStr_out_index = 0;
 
 // TODO - validate
 int readState = 0;
-int readMessageSize = 0;
+int readMsgSize = 0;
 int readMessage = 0;
-int messageSize;
-char[] message = {0};
-char* pMessage;
+short msgSize;
+//char message[MAX_MSG] = {0};
+//char* pMessage;
+char receivedByte;
+int i = 0; // Test variable
+// TODO - handle msgs longer then 10. as it ruins bytes order
+void UART0_IRQHandler(){
+	char temp;
+	static int idx = 0; 
+	if(UART0_S1 & UART_S1_RDRF_MASK){ // RX buffer is full and ready for reading	
+		receivedByte = UART0_D;
+		if (!readState){
+			tempState = receivedByte - '0';
+			readState = 1;
+		}
+		else if (!readMsgSize){
+			msgSize = receivedByte - '0';
+			readMsgSize = 1;
+			memset(&message[0], 0, sizeof(message));
+		} 
+		else {
+			message[(idx++)% 32] = receivedByte;
+			if (idx == (msgSize)){						
+				readState = 0;
+				readMsgSize = 0;
+				idx = 0;
+				msgDisplayed = 0;
+			}
+		}	
+			
+		
+			
+			
+	}
+		if(UART0_S1 & UART_S1_TDRE_MASK){   // TX buffer is empty and ready for sending
+			UART0_D = temp;
+		}
+//	if(UART0_S1 & UART_S1_RDRF_MASK){ // RX buffer is full and ready for reading	
+//		temp = UART0_D;	
+//		message[(idx++) % 32] = temp;
+////		lcd_putchar(temp);
+////		if (temp == 'y');
+////			lcd_printNewLn(message);
+//	}
+////	UART0_C2 |= UART_C2_TIE_MASK;   	// enable transmit
+//	
+//	if(UART0_S1 & UART_S1_TDRE_MASK){   // TX buffer is empty and ready for sending
+//		UART0_D = temp;
+//	}
+}
 
+/*
+// TODO - Should update to support other system states rather then only chat mode.
+void UART0_IRQHandler(){
+	static int readState = 0;
+	static int readMsgSize = 0;
+//	volatile static int readMessage = 0;
+	static int msgSize;
+	static int idx = 0;
+	uint8_t receivedByte;
+		
+	if(UART0_S1 & UART_S1_RDRF_MASK){ // RX buffer is full and ready for reading
+		receivedByte = UART0_D;
+		if (!readState){
+			readState = 1;
+			int state = receivedByte;
+//			updateState(atoi(receivedByte));
+		} else if (!readMsgSize){
+			msgSize = receivedByte;	// TODO - should be atoi
+			readMsgSize = 1;
+		} else if (idx < msgSize && getState() == 0)
+			message[idx] = receivedByte;
+		else{
+			//lcd_printNewLn(message);
+			readState = 0;
+			readMsgSize = 0;
+			idx = 0;
+		}
+			
+	}
+}
+*/
 
+/*
 void UART0_IRQHandler(){
     static int intInput;
     if( UART0_S1 & UART_S1_RDRF_MASK ){ // RX buffer is full and ready for reading
-
+    	message[i++] = UART0_D;
 	    printStr[printStr_in_index++] = readStr[readStr_index++] = UART0_D;
+        
         // 1st implementation option - receving header bytes: systameState, message size
         if (!readState){
-            if(sysState != atoi(UART0_D)){
-                exitState(sysState);
-                sysState = atoi(UART0_D);
-                enterState(sysState);
+            if(getState() != atoi(UART0_D)){
+                exitState(getState());
+                setState(atoi(UART0_D));
+                enterState(getState());
             }
             else
                 readState = 1;
@@ -44,31 +125,31 @@ void UART0_IRQHandler(){
         else if (!readMessageSize)
         {
             messageSize = atoi(UART0_D);
-            pMessage = (char*)malloc(messageSize);
             readMessageSize = 1;
         }else
         {
             static int currentlyReceivedBytes = 0;
             if(currentlyReceivedBytes < messageSize)
-                pMessage[currentlyReceivedBytes++] = UART0_D;
+                message[currentlyReceivedBytes++] = UART0_D;
             else{
+                lcd_printNewLn(message);
                 currentlyReceivedBytes = 0;
                 readState = 0;
                 readMessageSize = 0;
-                readStr = *(pMessage);
-                free(pMessage);
+                
+              
             }
         }
         
         
-
+                
         // 2nd implementation option - incase message is terminated with /r or /n.
 	    if (readStr[readStr_index-1] == '\r'){
             printStr[printStr_in_index++]   = readStr[readStr_index++]  = '\n';
             readStr_index = 0;
 
             // handle state
-            intInput = atoi(readStr);
+            /*intInput = atoi(readStr);
             if(getState() == state4){
                 if(intInput <= 0) printLater(errorMsg);
                 else{
@@ -81,7 +162,7 @@ void UART0_IRQHandler(){
                 else setNewState(intInput);
             }
 	    }
-        UART0_C2 |= UART_C2_TIE_MASK;   // enable transmit
+        //UART0_C2 |= UART_C2_TIE_MASK;   // enable transmit
 	}
 	else if( UART0_S1 & UART_S1_TDRE_MASK ){ // TX buffer is empty and ready for sending
 		UART0_D = printStr[printStr_out_index++];
@@ -92,7 +173,7 @@ void UART0_IRQHandler(){
 
 	}
 }
-
+*/
 void printLater(char * str){
     int i = 0;
     for(; str[i] != '\0'; i++)
@@ -152,7 +233,7 @@ void InitUARTs(){
 	//We have to feed this function the clock in KHz!
 	Uart0_Br_Sbr(CORE_CLOCK/2/1000, SDA_SERIAL_BAUD);
 	 //Enable receive interrupts
-
+//	UART0_C1 |= 0x4;
 	UART0_C2 = UARTLP_C2_RE_MASK | UARTLP_C2_TE_MASK | UARTLP_C2_RIE_MASK; // Enable Transmitter, Receiver, Receive interrupt
 	set_irq_priority(INT_UART0-16,0);
 	enable_irq(INT_UART0-16);
@@ -268,3 +349,41 @@ void Uart0_Br_Sbr(int sysclk, int baud){
 		}
 
 }
+
+
+/********************************************************************/
+/*
+ * Wait for a character to be received on the specified uart
+ *
+ * Parameters:
+ *  channel      UART channel to read from
+ *
+ * Return Values:
+ *  the received character
+ */
+char uart_getchar (UART_MemMapPtr channel)
+{
+      /* Wait until character has been received */
+      while (!(UART_S1_REG(channel) & UART_S1_RDRF_MASK));
+    
+      /* Return the 8-bit data from the receiver */
+      return UART_D_REG(channel);
+}
+
+/********************************************************************/
+/*
+ * Wait for space in the uart Tx FIFO and then send a character
+ *
+ * Parameters:
+ *  channel      UART channel to send to
+ *  ch			 character to send
+ */ 
+void uart_putchar (UART_MemMapPtr channel, char ch)
+{
+      /* Wait until space is available in the FIFO */
+      while(!(UART_S1_REG(channel) & UART_S1_TDRE_MASK));
+    
+      /* Send the character */
+      UART_D_REG(channel) = (uint8)ch;
+    
+ }

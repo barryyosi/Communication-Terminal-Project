@@ -12,7 +12,11 @@ int main(void){
 
 	while(1){
 		wait();
-		handleStateChangeIfNeeded();
+		updateState(tempState);
+		if (!msgDisplayed){
+			lcd_printNewLn(message);
+			msgDisplayed = 1;
+		}
 	}
 	return 0;
 }

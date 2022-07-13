@@ -23,8 +23,8 @@ public class Terminal {
     public static State sysState = State.Sleep;
 
     // TODO - Make filesDir more OS generic
-//    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
-    public static File filesDir = new File("src/main/Files");
+    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
+//    public static File filesDir = new File("src/main/Files");
     public static File[] listOfFiles = filesDir.listFiles();
     public static ArrayList<File> pcFiles = new ArrayList<File>(Arrays.stream(listOfFiles).toList());
     public static ArrayList<File> mcuFiles = new ArrayList<File>();
@@ -39,8 +39,6 @@ public class Terminal {
         sysPort.setBaudRate(baud);
         String message = sysPort.toString() + " connected with baud-rate: " + baud + ", stop-bits: " + STOP_BITS + ", data-bits: " + DATA_BITS + " and no-parity.";
         JOptionPane.showMessageDialog(null, message);
-        sysPort.closePort();
-        sysPort.openPort();
 
     }
 
@@ -51,8 +49,15 @@ public class Terminal {
     public static void sendFrame(String msg){
         byte[] frame;
         Integer stateOrdinal = sysState.ordinal();      // Each message syncs system state with MCU
-        String frameString = stateOrdinal.toString() + ((Integer)msg.length()).toString() + msg;
-        frame = frameString.getBytes();
+        String frameString =  stateOrdinal.toString() + ((Integer)msg.length()).toString() + msg;
+
+        frame = frameString.toString().getBytes();
+
+//        System.out.println(frame);
+        System.out.println("\n");
+        for (byte argByte:frame) {
+            System.out.print(((char)argByte) +"(" + argByte + ")" + "\t");
+        }
 
         sysPort.writeBytes(frame, frame.length);
         // TODO - Implement Ack receive.
@@ -60,12 +65,15 @@ public class Terminal {
     }
     public static void main(String[] args) throws IOException {
 
-         TerminalGUI gui = new TerminalGUI();
+        TerminalGUI gui = new TerminalGUI();
         sysPort = SerialPort.getCommPort("COM6");
         initNewSerialPort(9600);
         var a = sysPort.getDeviceWriteBufferSize();
+        sysPort.closePort();
+        sysPort.openPort();
         // Sync message
-        sendFrame("");
+//        sysState = State.Chat;  // Test assignment
+
 
         //sysPort.writeBytes(msg, 4);
 //        var b = sysPort.getOutputStream();

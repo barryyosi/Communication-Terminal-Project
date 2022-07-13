@@ -5,7 +5,7 @@
 #include "hal_PB_SW_LED_RGB.h"
 #include "api_LCD.h"
 
-void PIT_IRQHandler(){
+/*void PIT_IRQHandler(){
         switch(getState()){
         case state1:
             toggleRGB();
@@ -28,7 +28,7 @@ void PIT_IRQHandler(){
     }
 	PIT_TFLG0 = PIT_TFLG_TIF_MASK; //clear the Pit 0 Irq flag
 }
-
+*/
 
 //-----------------------------------------------------------------
 // TPMx - Initialization

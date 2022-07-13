@@ -107,6 +107,8 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 chatPrint(textArea,PC, textField.getText());
+                String message = "PC:".concat(textField.getText());
+                Terminal.sendFrame(message);
                 textField.setText("");
             }
         });
@@ -301,8 +303,8 @@ public class TerminalGUI {
     }
     private void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
         argTextArea.append( messageCommitter + ": " + msg +"\n");
-        if(messageCommitter == PC)
-            Terminal.sendFrame(msg);
+//        if(messageCommitter == PC)
+//            Terminal.sendFrame(msg);
     }
     public TerminalGUI() {
 

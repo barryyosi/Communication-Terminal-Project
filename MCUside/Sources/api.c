@@ -13,7 +13,7 @@ void inits() {
 
 	ClockSetup();
 	InitGPIO();
-	InitPIT(getX());
+	//InitPIT(getX());
 	InitUARTs();
 	initLCD();
 	initRGBLed();

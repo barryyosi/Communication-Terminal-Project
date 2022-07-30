@@ -2,6 +2,7 @@
 #include "MKL25Z4.h"
 #include "app_FSM_handler.h"
 #include "hal_UART.h"
+#include <math.h>
 
 
 
@@ -21,7 +22,7 @@ int printStr_out_index = 0;
 int readState = 0;
 int readMsgSize = 0;
 int readMessage = 0;
-short msgSize;
+short msgSize = 0;
 //char message[MAX_MSG] = {0};
 //char* pMessage;
 char receivedByte;
@@ -36,9 +37,10 @@ void UART0_IRQHandler(){
 			tempState = receivedByte - '0';
 			readState = 1;
 		}
-		else if (!readMsgSize){
-			msgSize = receivedByte - '0';
-			readMsgSize = 1;
+		else if (readMsgSize != 2){
+			readMsgSize++;
+			msgSize += (receivedByte - '0')*pow(10, 2 - readMsgSize);
+			
 			memset(&message[0], 0, sizeof(message));
 		} 
 		else {
@@ -46,6 +48,7 @@ void UART0_IRQHandler(){
 			if (idx == (msgSize)){						
 				readState = 0;
 				readMsgSize = 0;
+				msgSize = 0;
 				idx = 0;
 				msgDisplayed = 0;
 			}

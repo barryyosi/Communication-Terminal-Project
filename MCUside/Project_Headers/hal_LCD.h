@@ -23,7 +23,7 @@
 #define cursor_off()              lcd_cmd(0x0C)
 #define cursor_on()               lcd_cmd(0x0F)
 #define lcd_function_set()        lcd_cmd(0x3C) // 8bit,two lines,5x10 dots
-#define lcd_go_to_line2()            lcd_cmd(0xC0)
+#define lcd_go_to_line2()         lcd_cmd(0xC0)
 #define lcd_goto_in_second_line(x) lcd_cmd(0xC0 + (x))
 
 #define setEntryMode()			  lcd_cmd(0x6);  //Entry Mode

@@ -23,8 +23,9 @@ public class Terminal {
     public static State sysState = State.Sleep;
 
     // TODO - Make filesDir more OS generic
-    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
+//    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
 //    public static File filesDir = new File("src/main/Files");
+    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\University\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
     public static File[] listOfFiles = filesDir.listFiles();
     public static ArrayList<File> pcFiles = new ArrayList<File>(Arrays.stream(listOfFiles).toList());
     public static ArrayList<File> mcuFiles = new ArrayList<File>();
@@ -49,7 +50,8 @@ public class Terminal {
     public static void sendFrame(String msg){
         byte[] frame;
         Integer stateOrdinal = sysState.ordinal();      // Each message syncs system state with MCU
-        String frameString =  stateOrdinal.toString() + ((Integer)msg.length()).toString() + msg;
+        String msgLength = String.format("%02d", (msg.length()));
+        String frameString =  stateOrdinal.toString() + msgLength + msg;
 
         frame = frameString.toString().getBytes();
 
@@ -68,7 +70,7 @@ public class Terminal {
         TerminalGUI gui = new TerminalGUI();
         sysPort = SerialPort.getCommPort("COM6");
         initNewSerialPort(9600);
-        var a = sysPort.getDeviceWriteBufferSize();
+//        var a = sysPort.getDeviceWriteBufferSize();
         sysPort.closePort();
         sysPort.openPort();
         // Sync message

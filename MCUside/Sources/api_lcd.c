@@ -15,12 +15,23 @@ void lcd_printNewLn(const char * s){
 	lcd_home();
 	lcd_cmd(0x6);  //Entry Mode
 	lcd_cmd(0x80); //Initialize DDRAM address to zero
-	lcd_puts(s);
+	lcd_puts2(s);
 }
 
 void lcd_printLine2(const char * s){
     lcd_go_to_line2();
 	lcd_puts(s);
+}
+void lcd_puts2(const char * s){
+	int idx = 0;
+	while(*s){
+		lcd_putchar(*s++);
+		idx++;
+		if(idx == MAX_LCD_LEN - 1)
+			lcd_cmd(0xC0);
+		
+		
+	}
 }
 
 void lcd_puts(const char * s){

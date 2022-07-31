@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -38,8 +39,8 @@ public class TerminalGUI {
         m11.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchPane(SleepModePanel);
                 Terminal.sysState = Terminal.State.Sleep;
+                switchPane(SleepModePanel);
 
             }
         });
@@ -48,8 +49,8 @@ public class TerminalGUI {
         m12.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchPane(ChatModePanel);
                 Terminal.sysState = Terminal.State.Chat;
+                switchPane(ChatModePanel);
             }
         });
 
@@ -57,8 +58,8 @@ public class TerminalGUI {
         m13.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchPane(FileTransferPanel);
                 Terminal.sysState = Terminal.State.FileTransfer;
+                switchPane(FileTransferPanel);
 
             }
         });
@@ -67,8 +68,8 @@ public class TerminalGUI {
         m14.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchPane(TerminalConfigPanel);
                 Terminal.sysState = Terminal.State.TerminalConfig;
+                switchPane(TerminalConfigPanel);
 
             }
         });
@@ -137,19 +138,21 @@ public class TerminalGUI {
         var pcFiles = Terminal.pcFiles.toArray(new File[0]);
         var mcuFiles = Terminal.mcuFiles.toArray(new File[0]);
 
+        // PC Files box.
         Box pcFilesBox = Box.createVerticalBox();
         JLabel pcLabel = new JLabel("PC Files");
-        DefaultListModel<File> pcf = new DefaultListModel();
-        for (File file : pcFiles) { pcf.addElement(file); }
+        DefaultListModel<File> pcf = new DefaultListModel<>();
+        for (File file : pcFiles) pcf.addElement(file);
         JList<File> pcFileJList = new JList(pcf);
         pcFileJList.setPreferredSize(new Dimension(850, 200));
         pcFilesBox.add(pcLabel);
         pcFilesBox.add(pcFileJList);
 
+        // MCU Files box.
         Box mcuFilesBox = Box.createVerticalBox();
         JLabel mcuLabel = new JLabel("MCU Files");
         DefaultListModel<File> mcuf = new DefaultListModel();
-        for (File file : mcuFiles) { pcf.addElement(file); }
+        for (File file : mcuFiles) pcf.addElement(file);
         JList<File> mcuFileJList = new JList(mcuf);
         mcuFileJList.setPreferredSize(new Dimension(850, 200));
         mcuFilesBox.add(mcuLabel);
@@ -189,12 +192,13 @@ public class TerminalGUI {
                 for (File file : selected){
                     if (mcuf.contains(file))
                         JOptionPane.showMessageDialog(null, "File already exist in MCU");
-                    else
+                    else {
                         mcuf.addElement(file);
-                    // TODO - Implement actual file transfer using UART
+                        try { Terminal.sendFile(file); }
+                        catch (IOException ex) { throw new RuntimeException(ex); }
+                    }
+                    }
                 }
-
-            }
         });
 
         JButton removeFromMCU = new JButton(" - ");
@@ -274,8 +278,9 @@ public class TerminalGUI {
         ChatModeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchPane(ChatModePanel);
                 Terminal.sysState = Terminal.State.Chat;
+                switchPane(ChatModePanel);
+
             }
         });
 
@@ -283,8 +288,8 @@ public class TerminalGUI {
         FileTransferButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchPane(FileTransferPanel);
                 Terminal.sysState = Terminal.State.FileTransfer;
+                switchPane(FileTransferPanel);
 
             }
         });
@@ -293,8 +298,8 @@ public class TerminalGUI {
         TerminalConfigButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchPane(TerminalConfigPanel);
                 Terminal.sysState = Terminal.State.TerminalConfig;
+                switchPane(TerminalConfigPanel);
 
             }
         });
@@ -316,7 +321,8 @@ public class TerminalGUI {
     }
 
     public void switchPane(JPanel argPanel) {
-
+        String message = Terminal.sysState.toString();
+        Terminal.sendFrame(message);
         terminalFrame.getContentPane().removeAll();
         terminalFrame.repaint();
         terminalFrame.revalidate();

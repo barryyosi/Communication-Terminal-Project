@@ -21,6 +21,7 @@
 #include "hal_UART.h"
 #include "hal_keypad.h"
 #include "hal_PB_SW_LED_RGB.h"
+#include "hal_dma.h"
 #include "api_lcd.h"
 #include "app_FSM_handler.h"
 
@@ -35,4 +36,6 @@ char message[MAX_MSG];      	// Received message from PC
 int msgDisplayed;		    	// Flag notes whether the message was already displayed or not.
 int tempState;
 
+
+int fileTransferReady;
 #endif /* TFC_H_ */

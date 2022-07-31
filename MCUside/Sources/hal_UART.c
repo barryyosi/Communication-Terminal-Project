@@ -27,7 +27,9 @@ short msgSize = 0;
 //char* pMessage;
 char receivedByte;
 int i = 0; // Test variable
-// TODO - handle msgs longer then 10. as it ruins bytes order
+		// File transfer testing variable
+int testFileTransfer = 0;		// File transfer testing variable
+
 void UART0_IRQHandler(){
 	char temp;
 	static int idx = 0; 
@@ -37,13 +39,13 @@ void UART0_IRQHandler(){
 			tempState = receivedByte - '0';
 			readState = 1;
 		}
+		
 		else if (readMsgSize != 2){
 			readMsgSize++;
 			msgSize += (receivedByte - '0')*pow(10, 2 - readMsgSize);
-			
 			memset(&message[0], 0, sizeof(message));
-		} 
-		else {
+			} 
+		else if (getState() != fileTransferMode || (getState() == fileTransferMode && !fileTransferReady )){
 			message[(idx++)% 32] = receivedByte;
 			if (idx == (msgSize)){						
 				readState = 0;
@@ -51,8 +53,39 @@ void UART0_IRQHandler(){
 				msgSize = 0;
 				idx = 0;
 				msgDisplayed = 0;
+				if (getState() == fileTransferMode){
+					fileTransferReady++;
+				}
+				}
 			}
-		}	
+		else{	// File Transfer Mode
+			testFileTransfer++;
+		}
+//		switch (getState()){
+//		case chatMode:
+//			if (readMsgSize != 2){
+//				readMsgSize++;
+//				msgSize += (receivedByte - '0')*pow(10, 2 - readMsgSize);
+//				memset(&message[0], 0, sizeof(message));
+//				} 
+//			else {
+//				message[(idx++)% 32] = receivedByte;
+//				if (idx == (msgSize)){						
+//					readState = 0;
+//					readMsgSize = 0;
+//					msgSize = 0;
+//					idx = 0;
+//					msgDisplayed = 0;
+//					}
+//				}
+//			break;
+//		
+//		default:
+//			break;
+//		
+//		}
+		
+			
 			
 			
 	}
@@ -180,18 +213,6 @@ void UART0_IRQHandler(){
 }
 */
 
-void UART_PrintMenu(){
-    static char menu[] =
-        "1. Blink RGB LED, color by color with delay of X[ms] \r\n"
-        "2. Count up onto LCD screen with delay of X[ms]      \r\n"
-        "3. Count down onto LCD screen with delay of X[ms]    \r\n"
-        "4. Get delay time X[ms]:                             \r\n"
-        "5. Potentiometer 3-digit value [v]                   \r\n"
-        "6. Clear LCD screen                                  \r\n"
-        "7. Show menu                                         \r\n"
-        "8. Sleep                                             \r\n";
-    UART_PrintLine(UART0_BASE_PTR, menu);
-}
 
 void uart0_putchar (char ch){                                   
   while(!(UART0_S1 & UART0_S1_TDRE_MASK));
@@ -246,6 +267,7 @@ void InitUARTs(){
 	UART0_C2 = UARTLP_C2_RE_MASK | UARTLP_C2_TE_MASK | UARTLP_C2_RIE_MASK; // Enable Transmitter, Receiver, Receive interrupt
 	set_irq_priority(INT_UART0-16,0);
 	enable_irq(INT_UART0-16);
+	fileTransferReady = 0;
 
 }
 

@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.List;
 // TODO - Implement receive method.
 public class Terminal {
     private static int MAX_STR_LEN = 32;
-    private static int EOS = 255;     // End of string character.
+    private static int EOS = '$';     // End of string character.
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
     protected static SerialPort sysPort;
@@ -52,9 +54,28 @@ public class Terminal {
     }
 
     // TODO - Implement this.
-    public void sendFile(File argFile){}
-    // TODO - Implement this.
+
+    static boolean fileNameSent = false;
+    public static void sendFile(File argFile) throws IOException {
+        byte[] fileFrame;
+        Integer stateOrdinal = sysState.ordinal();      // Each message/fileTransfer syncs system state with MCU
+
+        String fileSize = String.format("%02d", argFile.length());
+        String fileName = argFile.getName();
+        sendFrame(fileName);
+        try {
+            String fileContent = Files.readString(argFile.toPath());
+            sendFrame(fileContent);
+        }
+        catch (IOException e){
+            String message = e.getMessage();
+            JOptionPane.showMessageDialog(null,"Error sending file: \n" + message);
+        }
+
+    }
     public void recvFile(){}
+
+    // TODO - Might need to enhance to support other system modes.
     public static void sendFrame(String msg){
         byte[] frame;
         Integer stateOrdinal = sysState.ordinal();      // Each message syncs system state with MCU
@@ -64,11 +85,12 @@ public class Terminal {
         frame = frameString.toString().getBytes();
 
         // Debug: Printing sent frame
-/*        for (byte argByte:frame) {
+        /*        for (byte argByte:frame) {
             System.out.print(((char)argByte) +"(" + argByte + ")" + "\t");
         }
 */
         sysPort.writeBytes(frame, frame.length);
+
         // TODO - Implement Ack receive.
         // while(sysPort.readBytes){}
     }
@@ -93,11 +115,12 @@ public class Terminal {
             public void serialEvent(SerialPortEvent event){
 
                 byte[] newData = event.getReceivedData();
+//                int msgSize = event.;
                 Character[] msg = new Character[newData.length];
                 char currentChar;
                 for (int i = 0; i < newData.length; i++) {
                     currentChar = (char) newData[i];
-                    if ((int)currentChar > EOS) {
+                    if ((int)currentChar == EOS) {
                         mcuMessage[msgIndex++] = '\0';
                         gui.chatPrint(gui.textArea, TerminalGUI.MCU, new String(mcuMessage));
                         mcuMessage = new char[MAX_STR_LEN];

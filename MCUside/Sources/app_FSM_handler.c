@@ -32,7 +32,7 @@ void resetDownCount(){downCount = 65535;}*/
 void handleDevicesInterrupt(DeviceId deviceId){
 	char keyPressed;
 	char messagePrefix[] = "MCU:";
-	char myMessageTemp[32];
+	int messageSize;
     switch (deviceId)
     {
 /*
@@ -65,7 +65,7 @@ void handleDevicesInterrupt(DeviceId deviceId){
 				}
                 keyPressed = keypad_scan();		        // Scanning the keypad & saving the pressed key
                 clearIRQFlag(Keypad_IRQ);
-                if(keyPressed != "z"){					// Avoiding undefined char.
+                if(keyPressed != 'z'){					// Avoiding undefined char.
 					lcd_putchar2(keyPressed);
 					currentMessageChar = keyPressed;
                 }                                                                                                                                                                                            
@@ -78,7 +78,10 @@ void handleDevicesInterrupt(DeviceId deviceId){
 			 if (getState() == chatMode){
 				 // TODO - Send current message to PC
 				 mcuMessage[idxInMcuMessage - 1] = currentMessageChar;
-				 mcuMessage[idxInMcuMessage] = "\0";
+				//  messageSize = idxInMcuMessage - 
+                //  mcuMessage[0]
+                 mcuMessage[idxInMcuMessage] = '$';
+
 				 uart0_putstr(mcuMessage);
 				 memset(&mcuMessage[0], 0, sizeof(mcuMessage));
 				//  idxInMcuMessage = 0;
@@ -103,6 +106,8 @@ FSMstate getState(){ return sysState; }
 
 void updateState(FSMstate argState){
     if(getState() != argState)
+//    	if (getState() == fileTransferMode)		// Nullifying fileTransferReady flag, if no longer on fileTransferMode.
+//    		fileTransferReady = 0;
     	exitState(getState());
         setState(argState);
         enterState(argState);

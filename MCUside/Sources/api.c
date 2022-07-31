@@ -13,13 +13,18 @@ void inits() {
 
 	ClockSetup();
 	InitGPIO();
+	
+	initKeypad();
+	initPushButton(0);
+	
 	//InitPIT(getX());
 	InitUARTs();
 	initLCD();
 	initRGBLed();
 	InitADCs();
+	InitPIT(1500);		// Setting pit for 2sec delay in order to allow switching between key character options.
 
-	initPushButton(0);
-
+	enable_irq(INT_PORTD-16); // Enable Interrupts 
+	set_irq_priority (INT_PORTD-16,0);  // Interrupt priority = 0 = max
 	EnableInterrupts();
 }

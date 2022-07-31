@@ -4017,6 +4017,7 @@ typedef struct PORT_MemMap {
 #define PORT_PCR_PS_SHIFT                        0
 #define PORT_PCR_PE_MASK                         0x2u
 #define PORT_PCR_PE_SHIFT                        1
+#define PORT_PCR_PE(x)                           (((uint32_t)(((uint32_t)(x))<<PORT_PCR_PE_SHIFT))&PORT_PCR_PE_MASK)
 #define PORT_PCR_SRE_MASK                        0x4u
 #define PORT_PCR_SRE_SHIFT                       2
 #define PORT_PCR_PFE_MASK                        0x10u
@@ -5132,18 +5133,32 @@ typedef struct SIM_MemMap {
 /* SCGC5 Bit Fields */
 #define SIM_SCGC5_LPTMR_MASK                     0x1u
 #define SIM_SCGC5_LPTMR_SHIFT                    0
+#define SIM_SCGC5_LPTMR_WIDTH                    1
+#define SIM_SCGC5_LPTMR(x)                       (((uint32_t)(((uint32_t)(x))<<SIM_SCGC5_LPTMR_SHIFT))&SIM_SCGC5_LPTMR_MASK)
 #define SIM_SCGC5_TSI_MASK                       0x20u
 #define SIM_SCGC5_TSI_SHIFT                      5
+#define SIM_SCGC5_TSI_WIDTH                      1
+#define SIM_SCGC5_TSI(x)                         (((uint32_t)(((uint32_t)(x))<<SIM_SCGC5_TSI_SHIFT))&SIM_SCGC5_TSI_MASK)
 #define SIM_SCGC5_PORTA_MASK                     0x200u
 #define SIM_SCGC5_PORTA_SHIFT                    9
+#define SIM_SCGC5_PORTA_WIDTH                    1
+#define SIM_SCGC5_PORTA(x)                       (((uint32_t)(((uint32_t)(x))<<SIM_SCGC5_PORTA_SHIFT))&SIM_SCGC5_PORTA_MASK)
 #define SIM_SCGC5_PORTB_MASK                     0x400u
 #define SIM_SCGC5_PORTB_SHIFT                    10
+#define SIM_SCGC5_PORTB_WIDTH                    1
+#define SIM_SCGC5_PORTB(x)                       (((uint32_t)(((uint32_t)(x))<<SIM_SCGC5_PORTB_SHIFT))&SIM_SCGC5_PORTB_MASK)
 #define SIM_SCGC5_PORTC_MASK                     0x800u
 #define SIM_SCGC5_PORTC_SHIFT                    11
+#define SIM_SCGC5_PORTC_WIDTH                    1
+#define SIM_SCGC5_PORTC(x)                       (((uint32_t)(((uint32_t)(x))<<SIM_SCGC5_PORTC_SHIFT))&SIM_SCGC5_PORTC_MASK)
 #define SIM_SCGC5_PORTD_MASK                     0x1000u
 #define SIM_SCGC5_PORTD_SHIFT                    12
+#define SIM_SCGC5_PORTD_WIDTH                    1
+#define SIM_SCGC5_PORTD(x)                       (((uint32_t)(((uint32_t)(x))<<SIM_SCGC5_PORTD_SHIFT))&SIM_SCGC5_PORTD_MASK)
 #define SIM_SCGC5_PORTE_MASK                     0x2000u
 #define SIM_SCGC5_PORTE_SHIFT                    13
+#define SIM_SCGC5_PORTE_WIDTH                    1
+#define SIM_SCGC5_PORTE(x)                       (((uint32_t)(((uint32_t)(x))<<SIM_SCGC5_PORTE_SHIFT))&SIM_SCGC5_PORTE_MASK)
 /* SCGC6 Bit Fields */
 #define SIM_SCGC6_FTF_MASK                       0x1u
 #define SIM_SCGC6_FTF_SHIFT                      0

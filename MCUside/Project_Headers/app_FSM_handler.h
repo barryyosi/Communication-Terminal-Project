@@ -2,9 +2,12 @@
 #ifndef APP_FSM_H_
 #define APP_FSM_H_
 
+#include "TFC.h"
 
 typedef enum {sleepMode, chatMode, fileTransferMode, terminalConfigMode} FSMstate;
 
+
+void handleDevicesInterrupt(DeviceId deviceId);
 
 void handleStateChangeIfNeeded();
 void enterState(FSMstate state);

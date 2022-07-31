@@ -5,30 +5,19 @@
 #include "hal_PB_SW_LED_RGB.h"
 #include "api_LCD.h"
 
-/*void PIT_IRQHandler(){
+void PIT_IRQHandler(){
         switch(getState()){
-        case state1:
-            toggleRGB();
+        case chatMode:
+//            lcd_cmd(0x14);	// Move lcd cursor right by one character.
+			memset(&keypadPressCounters, 0, sizeof(keypadPressCounters));
+			pitDisable();
             break;
-        case state2:
-            lcd_printInt(getUpCountAndInc());
-            break;
-        case state3:
-            lcd_printInt(getDownCountAndDecr());
-            break;
-        case state5:
-        {
-			//read potentiometer
-
-            //ADC0_SC1A = POT_ADC_CHANNEL | ADC_SC1_AIEN_MASK;  //POT channel is SE0 , ADC interrupt is enabled.
-            break;
-        }
         default:
             break;
     }
 	PIT_TFLG0 = PIT_TFLG_TIF_MASK; //clear the Pit 0 Irq flag
 }
-*/
+
 
 //-----------------------------------------------------------------
 // TPMx - Initialization
@@ -82,13 +71,13 @@ void ClockSetup(){
 // PIT - Initialisation
 //-----------------------------------------------------------------
 void InitPIT(uint32_t X){
-	SIM_SCGC6 |= SIM_SCGC6_PIT_MASK; //Enable the Clock to the PIT Modules
+	SIM_SCGC6 |= SIM_SCGC6_PIT_MASK; 						//Enable the Clock to the PIT Modules
 	// Timer 0
-	PIT_LDVAL0 = (X * 0x0000BB80); // setup timer 0 for 1msec counting period
-	PIT_TCTRL0 = PIT_TCTRL_TEN_MASK | PIT_TCTRL_TIE_MASK; //enable PIT0 and its interrupt
-	PIT_MCR |= PIT_MCR_FRZ_MASK; // stop the pit when in debug mode
-	enable_irq(INT_PIT-16); //  //Enable PIT IRQ on the NVIC
-	set_irq_priority(INT_PIT-16,0);  // Interrupt priority = 0 = max
+	PIT_LDVAL0 = (X * 0x0000BB80);  						// Setup timer 0 for 1msec counting period
+	PIT_TCTRL0 = PIT_TCTRL_TEN_MASK | PIT_TCTRL_TIE_MASK;   // Enable PIT0 and its interrupt
+	PIT_MCR |= PIT_MCR_FRZ_MASK; 							// Stop the pit when in debug mode
+	enable_irq(INT_PIT-16); 							    // Enable PIT IRQ on the NVIC
+	set_irq_priority(INT_PIT-16,0); 						// Interrupt priority = 0 = max
 }
 
 void updatePIT(uint32_t X){
@@ -96,5 +85,5 @@ void updatePIT(uint32_t X){
 }
 
 
-void startPitCount(){PIT_MCR &= ~PIT_MCR_MDIS_MASK;} //Enable the PIT module;
-void stopPitCount() {PIT_MCR |=  PIT_MCR_MDIS_MASK;} //disable the PIT module;
+void pitEnable(){PIT_MCR &= ~PIT_MCR_MDIS_MASK;} //Enable the PIT module;
+void pitDisable() {PIT_MCR |=  PIT_MCR_MDIS_MASK;} //disable the PIT module;

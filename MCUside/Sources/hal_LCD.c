@@ -26,7 +26,7 @@ void lcd_putchar(unsigned char c){
 
 	LCD_RS(0);
 }
-
+		
 
 //******************************************************************
 // initialize the LCD

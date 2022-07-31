@@ -19,6 +19,7 @@ public class TerminalGUI {
     JPanel TerminalConfigPanel;
     JMenuBar menuBar;
 
+    JTextArea textArea;
     public static final String PC = "PC";
     public static final String MCU = "MCU";
 
@@ -98,7 +99,8 @@ public class TerminalGUI {
     }
     private void initChatModePanel(){
         // Creating chat mode panel and adding relevant components.
-        JTextArea textArea = new JTextArea(30, 30);
+        textArea= new JTextArea(30, 30);
+
         JLabel label = new JLabel("Enter Message");
         JTextField textField = new JTextField(15); // accepts upto 15 characters
 
@@ -301,7 +303,7 @@ public class TerminalGUI {
         SleepModePanel.add(FileTransferButton);
         SleepModePanel.add(TerminalConfigButton);
     }
-    private void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
+    protected void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
         argTextArea.append( messageCommitter + ": " + msg +"\n");
 //        if(messageCommitter == PC)
 //            Terminal.sendFrame(msg);

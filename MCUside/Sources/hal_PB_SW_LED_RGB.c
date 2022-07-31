@@ -74,12 +74,12 @@ DeviceId getIRQSource(PortBase base){
     return DEVICE_NOT_FOUND; // the return is only to avoid warning
 }
 
-char love[] = "I love my negev\r\n";
 
 void PORTD_IRQHandler(){
-    if(getIRQFlag(PushButtons[0]) == 1 && PushButtons[0].base == BASE_D) {
-        clearIRQFlag(PushButtons[0]);
-        printLater(love);
-    }
+
+    DeviceId deviceId = getIRQSource(BASE_D);
+    handleDevicesInterrupt(deviceId);
 
 }
+
+

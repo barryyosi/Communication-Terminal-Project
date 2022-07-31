@@ -38,3 +38,10 @@ void lcd_puts(const char * s){
 	while(*s)
 		lcd_putchar(*s++);
 }
+
+void lcd_putchar2(unsigned char c){
+	if (idxInMcuMessage == MAX_LCD_LEN - 4)		// Cursor reached end of line
+		lcd_cmd(0xC0);		// Move cursor one line down.
+	lcd_putchar(c);
+		
+}

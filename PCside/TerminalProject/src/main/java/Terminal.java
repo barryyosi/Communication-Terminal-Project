@@ -1,5 +1,6 @@
 import com.fazecast.jSerialComm.*;
 
+import javax.print.DocFlavor;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
@@ -7,18 +8,25 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 // TODO - Implement receive method.
 public class Terminal {
+    private static int MAX_STR_LEN = 32;
+    private static int EOS = 255;     // End of string character.
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
     protected static SerialPort sysPort;
     protected static Integer sysBaudRate;
+
     private InputStream inputStream;
     private OutputStream outputStream;
-
+    public static int msgIndex = 0;
+    public static char[] mcuMessage = new char[MAX_STR_LEN];
     private static int STOP_BITS = 1;
     private static int DATA_BITS = 8;
+
+
     public enum State {Sleep, Chat, FileTransfer, TerminalConfig }
     public static State sysState = State.Sleep;
 
@@ -55,24 +63,68 @@ public class Terminal {
 
         frame = frameString.toString().getBytes();
 
-//        System.out.println(frame);
-        System.out.println("\n");
-        for (byte argByte:frame) {
+        // Debug: Printing sent frame
+/*        for (byte argByte:frame) {
             System.out.print(((char)argByte) +"(" + argByte + ")" + "\t");
         }
-
+*/
         sysPort.writeBytes(frame, frame.length);
         // TODO - Implement Ack receive.
         // while(sysPort.readBytes){}
+    }
+    Terminal(){
+//        mcuMessageList = new ArrayList<Character>();
     }
     public static void main(String[] args) throws IOException {
 
         TerminalGUI gui = new TerminalGUI();
         sysPort = SerialPort.getCommPort("COM6");
         initNewSerialPort(9600);
+
 //        var a = sysPort.getDeviceWriteBufferSize();
         sysPort.closePort();
         sysPort.openPort();
+        sysPort.addDataListener(new SerialPortDataListener() {
+            @Override
+            public int getListeningEvents(){
+                return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
+            }
+            @Override
+            public void serialEvent(SerialPortEvent event){
+
+                byte[] newData = event.getReceivedData();
+                Character[] msg = new Character[newData.length];
+                char currentChar;
+                for (int i = 0; i < newData.length; i++) {
+                    currentChar = (char) newData[i];
+                    if ((int)currentChar > EOS) {
+                        mcuMessage[msgIndex++] = '\0';
+                        gui.chatPrint(gui.textArea, TerminalGUI.MCU, new String(mcuMessage));
+                        mcuMessage = new char[MAX_STR_LEN];
+                        msgIndex = 0;
+                    }
+                    else if (((int)currentChar >= 65 && (int)currentChar <= 90) || (int)currentChar >= 48 && (int)currentChar <= 57)
+                        mcuMessage[msgIndex++] = currentChar;
+
+                    System.out.println(currentChar + " ascii value: " + (int)currentChar);
+                }
+//                String str = new String(mcuMessage);
+//                System.out.println("\t message so far: " + str);
+
+//                String mcuMessageStr = new String(msg);
+
+//                System.out.println(mcuMessage.toString() + "Message size: " + mcuMessage.length);
+
+//                if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE)
+//                    return;
+//                byte[] newData = new byte[sysPort.bytesAvailable()];
+//                int tempName = sysPort.readBytes(newData, newData.length);
+//                if (sysState == State.Chat){
+//                    System.out.println("received STRING: " + newData.toString() + "\n" + "received int: " + tempName);
+//                    gui.chatPrint(gui.textArea,gui.MCU, );
+//                    String message = "PC:".concat(textField.getText());
+                }
+        });
         // Sync message
 //        sysState = State.Chat;  // Test assignment
 

@@ -13,9 +13,9 @@
 
 uint8_t string1[31];
 char readStr[MAX_STRING] = {0};
-char printStr[MAX_STRING] = {0};
+char printStr[MAX_MSG] = {0};
 int readStr_index = 0;
-int printStr_in_index = 0;
+int writeStrIdx = 0;
 int printStr_out_index = 0;
 
 // TODO - validate
@@ -54,12 +54,14 @@ void UART0_IRQHandler(){
 			}
 		}	
 			
-		
-			
 			
 	}
 		if(UART0_S1 & UART_S1_TDRE_MASK){   // TX buffer is empty and ready for sending
-			UART0_D = temp;
+//			UART0_D = printStr[writeStrIdx++];
+//			if ( printStr[writeStrIdx++] == "\0"){                  // TX over?
+//				writeStrIdx = 0;
+//				UART0_C2 &= ~UART_C2_TIE_MASK;
+//			}
 		}
 //	if(UART0_S1 & UART_S1_RDRF_MASK){ // RX buffer is full and ready for reading	
 //		temp = UART0_D;	
@@ -177,12 +179,6 @@ void UART0_IRQHandler(){
 	}
 }
 */
-void printLater(char * str){
-    int i = 0;
-    for(; str[i] != '\0'; i++)
-        printStr[printStr_in_index++] = str[i];
-    UART0_C2 |= UART_C2_TIE_MASK;   // enable transmit
-}
 
 void UART_PrintMenu(){
     static char menu[] =
@@ -194,18 +190,28 @@ void UART_PrintMenu(){
         "6. Clear LCD screen                                  \r\n"
         "7. Show menu                                         \r\n"
         "8. Sleep                                             \r\n";
-    UART_PrintLine(menu);
+    UART_PrintLine(UART0_BASE_PTR, menu);
 }
 
-void UART_PrintLine(char* str){
-    int len;
-    while(printStr_in_index != 0 || printStr_out_index != 0) wait();
-    for(len = 0; str[len] != '\0'; len++){
-        printStr[len] = str[len];
+void uart0_putchar (char ch){                                   
+  while(!(UART0_S1 & UART0_S1_TDRE_MASK));
+      UART0_D = (uint8_t)ch;
+}
+
+void uart0_putstr(const uint8_t *str){                  
+    while(*str != '\0'){
+    	uart0_putchar(*str++);
     }
-    printStr[len] = '\0';
-    printStr_out_index = 0;
-    printStr_in_index = len;
+    uart0_putchar(*str++);
+}
+ 
+void UART_PrintLine(UART_MemMapPtr channel, char* str){
+    volatile unsigned int i;
+    while(!(UART_S1_REG(channel) & UART_S1_TDRE_MASK)); /* Wait until space is available in the FIFO */
+    for(i = 0; i < idxInMcuMessage; i++){
+        UART_D_REG(channel) = str[i];
+    }
+    UART_D_REG(channel) = '\0';;
 	UART0_C2 |= UART_C2_TIE_MASK;
 }
 

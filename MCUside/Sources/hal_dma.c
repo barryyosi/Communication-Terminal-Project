@@ -2,7 +2,6 @@
 
 void initDMA(){
 
-	
 	// Enable clocks
 	SIM_SCGC6 |= SIM_SCGC6_DMAMUX_MASK;
 	SIM_SCGC7 |= SIM_SCGC7_DMA_MASK;
@@ -48,8 +47,18 @@ void initDMA(){
 }
 
 
-void enableDMA_irq(){ DMA_DCR0 |= DMA_DCR_EINT_MASK; }		// Enable interrupt
-
+void enableDMA(){ 
+	
+	DMA_DAR0 = (uint32_t)&tempFile;       			//destination
+//	tempFile2 = (char*)malloc(currentFileSize);
+	DMA_DSR_BCR0 = DMA_DSR_BCR_BCR(currentFileSize);       // number of bytes to transfer
+	DMAMUX0_CHCFG0 |= DMAMUX_CHCFG_ENBL_MASK; 				// Enable DMA channel 
+	UART0_C5 |= UART0_C5_RDMAE_MASK;          				// Enable DMA request for UART0 receiver; }		// Enable interrupt
+	
+	enable_irq(INT_DMA0 - 16);
+//	enable_irq(INT_DMA1 - 16);
+	DMA_DCR0 |= DMA_DCR_START_MASK;
+}
 /*
  * Handles DMA0 interrupt
  * Resets the BCR register and clears the DONE flag
@@ -61,7 +70,6 @@ void DMA0_IRQHandler(void)
 	DMA_DSR_BCR0 |= DMA_DSR_BCR_DONE_MASK;			// Clear Done Flag
 	DMAMUX0_CHCFG0 &= ~DMAMUX_CHCFG_ENBL_MASK;	    // Disable DMA Channel 0
 	UART0_C5 &= ~UART0_C5_RDMAE_MASK; 				// Disabling DMA using UART
-	enable_irq(INT_UART0-16);						// Enable UART0 interrupt
 	int j;
 	for (j=1000000; j>0; j--);	                    // Delay
 }

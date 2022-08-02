@@ -3,15 +3,14 @@
 void receiveFile(char* fName){
     
     pFile file;
-    file.Name = fName;
-    
-    char fileSize[4];
+    file.name = fName;
+    file.size = currentFileSize;
+    tempFile[0] = receivedByte;		// Last received byte should be the first byte of the file.
+    file.content = (char*)malloc(file.size);
     int j;
-    for (j = 0; j < 4; j++)
-        fileSize[j] = strlen(fName) - 4 + j;
+    for(j = 0; j < file.size; j++)
+    	file.content[j] = tempFile[j];
     
-    file.Size = atoi(fileSize);
-
     // Allocating first place in files DS.
     int i;
     if(fileCount){
@@ -23,9 +22,25 @@ void receiveFile(char* fName){
     }
     pFiles[0] = &file;
     fileCount++;
+    
+    readFileName = 0;
+    enable_irq(INT_UART0-16);						// Enable UART0 interrupt
+    readState = 0;
+	readMsgSize = 0;
+	msgSize = 0;
+	idx = 0;
+	msgDisplayed = 0;
+}
 
-    DMA_DAR0 = tempFile;                        // Destination - place file in a temporary location, before moving it to it's corresponding pFile instance.
-    DMA_DSR_BCR0 = DMA_DSR_BCR_BCR(file.Size);  // Config DMA transfer length.
-    DMAMUX0_CHCFG0 |= DMAMUX_CHCFG_ENBL_MASK; 	// Enable DMA 
-    UART0_C5 |= UART0_C5_RDMAE_MASK;          	// Enable DMA request for UART0 receiver 
+
+void extractFileSize(const int msgSize){
+	int i;
+	char tempFileSize[4] = {0};
+	
+	for(i = 0; i < 4; i++){
+		tempFileSize[i] = message[i + msgSize - 4];
+		message[i + msgSize - 4] = ' ';
+	}
+	currentFileSize = atoi(tempFileSize);
+	
 }

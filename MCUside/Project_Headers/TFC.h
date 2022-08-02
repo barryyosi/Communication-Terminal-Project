@@ -18,10 +18,17 @@
 #include "hal_keypad.h"
 #include "hal_PB_SW_LED_RGB.h"
 #include "hal_dma.h"
+#include "hal_lcd.h"
 #include "api_lcd.h"
 #include "app_FSM_handler.h"
 #include "app.h"
 
+char receivedByte;
+int readState;
+int readMsgSize;
+int readMessage;
+short msgSize;
+static int idx;
 
 int keypadPressCounters[16];	// Used to count presses on keypad keys, in order to iterate over character options.
 int mcuTyping;					// Flag indicating ongoing type on mcu.
@@ -39,8 +46,8 @@ int readFileName;
 int dmaIrqFlag;
 
 typedef struct pFile{
-    int Size;
-    char* Name;
+    int size;
+    char* name;
     char* content;
 } pFile;
 
@@ -48,6 +55,9 @@ pFile* pFiles[FILES_LIMIT];
 // char* files[20];
 // char* fileNames[20];
 char tempFile[MAX_FILE_SIZE];
+char tempFile3[MAX_FILE_SIZE];
+char* tempFile2;
 int fileSizes[20];
 int fileCount;
+int currentFileSize;
 #endif /* TFC_H_ */

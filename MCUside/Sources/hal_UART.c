@@ -19,17 +19,14 @@ int writeStrIdx = 0;
 int printStr_out_index = 0;
 
 // TODO - validate
-int readState = 0;
-int readMsgSize = 0;
-int readMessage = 0;
-short msgSize = 0;
+
 //char message[MAX_MSG] = {0};
 //char* pMessage;
 char receivedByte;
 int i = 0; // Test variable
 		// File transfer testing variable
 int testFileTransfer = 0;		// File transfer testing variable
-static int idx = 0; 
+ 
 
 void UART0_IRQHandler(){
 	char temp;
@@ -53,13 +50,16 @@ void UART0_IRQHandler(){
                     break;
 
                 case fileTransferMode:
-                    if(!fileTransferReady){
+                    if(!fileTransferReady || !readFileName){
                         UART_readMessage();
-                        fileTransferReady = 1;
                     } 
-                    else 
-                        UART_receiveFile();
-                    break;
+                    else{
+                    	disable_irq(INT_UART0-16);               			    // Disable UART0 interrupt
+						                    	enableDMA();
+//                    	UART_receiveFile();
+                    	msgDisplayed = 1;
+                        
+                    }break;
 
                 default:
                     UART_readMessage();
@@ -100,26 +100,31 @@ void UART0_IRQHandler(){
 void UART_readMessage(){
     message[(idx++)% MAX_MSG] = receivedByte;
     if (idx == (msgSize)){						
+    	
+    	if(getState() == fileTransferMode && !fileTransferReady)
+        	fileTransferReady = 1;
+        else if(getState() == fileTransferMode && !readFileName){
+        	extractFileSize(msgSize);
+        	strcpy(fileName, message);
+        	readFileName = 1;
+        }
         readState = 0;
-        readMsgSize = 0;
-        msgSize = 0;
-        idx = 0;
-        msgDisplayed = 0;
+		readMsgSize = 0;
+		msgSize = 0;
+		idx = 0;
+		msgDisplayed = 0;
+		
+        	
     }
 }
 void UART_receiveFile(){
+	disable_irq(INT_UART0-16);               			    // Disable UART0 interrupt
+	enableDMA();
+	// TODO - enable file DMA transfer	
+	// Should ignore this case, DMA should handle it
+	// TODO - Also static int readFileName = 0;
+	testFileTransfer++;
 	
-	if (!readFileName){ //if (getState() != fileTransferMode || (getState() == fileTransferMode && !fileTransferReady )){
-		UART_readMessage();
-        readFileName = 1;
-			// TODO - enable file DMA transfer	
-	}
-	else{	// File Transfer Mode
-		disable_irq(INT_UART0-16);               			    // Disable UART0 interrupt
-		// Should ignore this case, DMA should handle it
-		// TODO - Also static int readFileName = 0;
-		testFileTransfer++;
-	}
 }
 
 void uart0_putchar (char ch){                                   

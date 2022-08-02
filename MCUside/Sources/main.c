@@ -11,20 +11,28 @@ const char transferMsg[] = "received";
 int main(void){
 	dmaIrqFlag = 0;
 	fileCount = 0;
+	readState = 0;
+	readMsgSize = 0;
+	readMessage = 0;
+	msgSize = 0;
+	idx = 0;
 	inits();
-	
+	// TODO - process file size before file is received.
+	currentFileSize = 1000;
 	while(1){
 		wait();
 		updateState(tempState);
 		if (!msgDisplayed){
 			lcd_printNewLn(message);
-			if (readFileName){
+			if (readFileName){		// Add flag to not show this when file is being transferred.
+				lcd_printNewLn(fileName);
 				lcd_printLine2(transferMsg);
+				receiveFile(fileName);
 			}
 		}
-		else if (msgDisplayed && readFileName){
-			receiveFile(fileName);
-			// Put in DMA handler readFileName = 0;
+		if (msgDisplayed && readFileName){
+
+			
 		}
 		msgDisplayed = 1;
 	}

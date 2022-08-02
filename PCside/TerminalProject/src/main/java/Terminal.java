@@ -65,8 +65,7 @@ public class Terminal {
         sendFrame(fileName + fileSize);
         try {
             String fileContent = Files.readString(argFile.toPath());
-            sendFrame(fileContent
-            );
+            sendFrame(fileContent);
         }
         catch (IOException e){
             String message = e.getMessage();

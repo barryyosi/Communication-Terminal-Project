@@ -60,12 +60,13 @@ public class Terminal {
         byte[] fileFrame;
         Integer stateOrdinal = sysState.ordinal();      // Each message/fileTransfer syncs system state with MCU
 
-        String fileSize = String.format("%02d", argFile.length());
+        String fileSize = String.format("%04d", argFile.length());
         String fileName = argFile.getName();
-        sendFrame(fileName);
+        sendFrame(fileName + fileSize);
         try {
             String fileContent = Files.readString(argFile.toPath());
-            sendFrame(fileContent);
+            sendFrame(fileContent
+            );
         }
         catch (IOException e){
             String message = e.getMessage();
@@ -83,7 +84,7 @@ public class Terminal {
         String frameString =  stateOrdinal.toString() + msgLength + msg;
 
         frame = frameString.toString().getBytes();
-
+        System.out.println(frameString.toString());
         // Debug: Printing sent frame
         /*        for (byte argByte:frame) {
             System.out.print(((char)argByte) +"(" + argByte + ")" + "\t");
@@ -100,10 +101,10 @@ public class Terminal {
     public static void main(String[] args) throws IOException {
 
         TerminalGUI gui = new TerminalGUI();
+        // TODO - config serialPort and baud-rate startup.
         sysPort = SerialPort.getCommPort("COM6");
         initNewSerialPort(9600);
 
-//        var a = sysPort.getDeviceWriteBufferSize();
         sysPort.closePort();
         sysPort.openPort();
         sysPort.addDataListener(new SerialPortDataListener() {
@@ -148,38 +149,7 @@ public class Terminal {
 //                    String message = "PC:".concat(textField.getText());
                 }
         });
-        // Sync message
-//        sysState = State.Chat;  // Test assignment
 
-
-        //sysPort.writeBytes(msg, 4);
-//        var b = sysPort.getOutputStream();
-//        b.write(msg);
-//        while(true)
-
-
-//
-
-//        while(true){
-//
-//            switch (sysState){
-//
-//                case Chat: {
-//                    // TODO - implement
-//                    // sysPort.serialRead();
-//                }break;
-//
-//                case FileTransfer:
-//                    // TODO - implement
-//
-//                case TerminalConfig:
-//                {
-//                    // TODO - pick port using gui
-//                    // TODO - set baudRate using gui - port.setBaudRate(baud);
-//                    sysState = State.Sleep;
-//                }break;
-//            }
-//        }
 
     }
 }

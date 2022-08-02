@@ -42,7 +42,7 @@ void wait (void)
         // If using KEIL's uVision, use the CMSIS intrinsic
     __wfi();
 #endif
-}
+ }
 /***********************************************************************/
 /*
  * Change the value of the vector table offset register to the specified value.

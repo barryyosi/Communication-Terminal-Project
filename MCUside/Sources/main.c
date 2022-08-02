@@ -7,17 +7,29 @@
 #include "api.h"
 #include "arm_cm0.h"
 
+const char transferMsg[] = "received";
 int main(void){
+	dmaIrqFlag = 0;
+	fileCount = 0;
 	inits();
-
+	
 	while(1){
 		wait();
 		updateState(tempState);
 		if (!msgDisplayed){
 			lcd_printNewLn(message);
-			msgDisplayed = 1;
+			if (readFileName){
+				lcd_printLine2(transferMsg);
+			}
 		}
+		else if (msgDisplayed && readFileName){
+			receiveFile(fileName);
+			// Put in DMA handler readFileName = 0;
+		}
+		msgDisplayed = 1;
 	}
+		
+
 	return 0;
 }
 

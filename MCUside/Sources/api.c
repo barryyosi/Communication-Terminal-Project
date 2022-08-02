@@ -24,7 +24,7 @@ void inits() {
 	InitADCs();
 	InitPIT(1500);		// Setting pit for 2sec delay in order to allow switching between key character options.
 	
-//	initDMA();
+	initDMA();
 	mcuTyping = 0;
 	
 	enable_irq(INT_PORTD-16); // Enable Interrupts 

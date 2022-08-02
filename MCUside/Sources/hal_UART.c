@@ -29,10 +29,11 @@ char receivedByte;
 int i = 0; // Test variable
 		// File transfer testing variable
 int testFileTransfer = 0;		// File transfer testing variable
+static int idx = 0; 
 
 void UART0_IRQHandler(){
 	char temp;
-	static int idx = 0; 
+	
 	if(UART0_S1 & UART_S1_RDRF_MASK){ // RX buffer is full and ready for reading	
 		receivedByte = UART0_D;
 		if (!readState){
@@ -53,40 +54,14 @@ void UART0_IRQHandler(){
 				msgSize = 0;
 				idx = 0;
 				msgDisplayed = 0;
-				if (getState() == fileTransferMode){
-					fileTransferReady++;
-				}
+				if (getState() == fileTransferMode)
+					fileTransferReady = 1;
 				}
 			}
 		else{	// File Transfer Mode
-			testFileTransfer++;
+			UART_receiveFile();
+			// testFileTransfer++;
 		}
-//		switch (getState()){
-//		case chatMode:
-//			if (readMsgSize != 2){
-//				readMsgSize++;
-//				msgSize += (receivedByte - '0')*pow(10, 2 - readMsgSize);
-//				memset(&message[0], 0, sizeof(message));
-//				} 
-//			else {
-//				message[(idx++)% 32] = receivedByte;
-//				if (idx == (msgSize)){						
-//					readState = 0;
-//					readMsgSize = 0;
-//					msgSize = 0;
-//					idx = 0;
-//					msgDisplayed = 0;
-//					}
-//				}
-//			break;
-//		
-//		default:
-//			break;
-//		
-//		}
-		
-			
-			
 			
 	}
 		if(UART0_S1 & UART_S1_TDRE_MASK){   // TX buffer is empty and ready for sending
@@ -96,123 +71,30 @@ void UART0_IRQHandler(){
 //				UART0_C2 &= ~UART_C2_TIE_MASK;
 //			}
 		}
-//	if(UART0_S1 & UART_S1_RDRF_MASK){ // RX buffer is full and ready for reading	
-//		temp = UART0_D;	
-//		message[(idx++) % 32] = temp;
-////		lcd_putchar(temp);
-////		if (temp == 'y');
-////			lcd_printNewLn(message);
-//	}
-////	UART0_C2 |= UART_C2_TIE_MASK;   	// enable transmit
-//	
-//	if(UART0_S1 & UART_S1_TDRE_MASK){   // TX buffer is empty and ready for sending
-//		UART0_D = temp;
-//	}
+
 }
 
-/*
-// TODO - Should update to support other system states rather then only chat mode.
-void UART0_IRQHandler(){
-	static int readState = 0;
-	static int readMsgSize = 0;
-//	volatile static int readMessage = 0;
-	static int msgSize;
-	static int idx = 0;
-	uint8_t receivedByte;
-		
-	if(UART0_S1 & UART_S1_RDRF_MASK){ // RX buffer is full and ready for reading
-		receivedByte = UART0_D;
-		if (!readState){
-			readState = 1;
-			int state = receivedByte;
-//			updateState(atoi(receivedByte));
-		} else if (!readMsgSize){
-			msgSize = receivedByte;	// TODO - should be atoi
-			readMsgSize = 1;
-		} else if (idx < msgSize && getState() == 0)
-			message[idx] = receivedByte;
-		else{
-			//lcd_printNewLn(message);
+void UART_receiveFile(){
+	
+	if (!readFileName){ //if (getState() != fileTransferMode || (getState() == fileTransferMode && !fileTransferReady )){
+		message[(idx++)% 32] = receivedByte;
+		if (idx == (msgSize)){						
 			readState = 0;
 			readMsgSize = 0;
+			msgSize = 0;
 			idx = 0;
+			msgDisplayed = 0;
+			readFileName = 1;
+			// TODO - enable file DMA transfer	
 		}
-			
+	}
+	else{	// File Transfer Mode
+		disable_irq(INT_UART0-16);               			    // Disable UART0 interrupt
+		// Should ignore this case, DMA should handle it
+		// TODO - Also static int readFileName = 0;
+		testFileTransfer++;
 	}
 }
-*/
-
-/*
-void UART0_IRQHandler(){
-    static int intInput;
-    if( UART0_S1 & UART_S1_RDRF_MASK ){ // RX buffer is full and ready for reading
-    	message[i++] = UART0_D;
-	    printStr[printStr_in_index++] = readStr[readStr_index++] = UART0_D;
-        
-        // 1st implementation option - receving header bytes: systameState, message size
-        if (!readState){
-            if(getState() != atoi(UART0_D)){
-                exitState(getState());
-                setState(atoi(UART0_D));
-                enterState(getState());
-            }
-            else
-                readState = 1;
-            
-        }
-        else if (!readMessageSize)
-        {
-            messageSize = atoi(UART0_D);
-            readMessageSize = 1;
-        }else
-        {
-            static int currentlyReceivedBytes = 0;
-            if(currentlyReceivedBytes < messageSize)
-                message[currentlyReceivedBytes++] = UART0_D;
-            else{
-                lcd_printNewLn(message);
-                currentlyReceivedBytes = 0;
-                readState = 0;
-                readMessageSize = 0;
-                
-              
-            }
-        }
-        
-        
-                
-        // 2nd implementation option - incase message is terminated with /r or /n.
-	    if (readStr[readStr_index-1] == '\r'){
-            printStr[printStr_in_index++]   = readStr[readStr_index++]  = '\n';
-            readStr_index = 0;
-
-            // handle state
-            /*intInput = atoi(readStr);
-            if(getState() == state4){
-                if(intInput <= 0) printLater(errorMsg);
-                else{
-                    setX(intInput);
-                    setNewState(0);
-                }
-            } else {
-                if(intInput == 9) setNewState(0);
-                else if(intInput <= 0 || intInput >= numOfStates) printLater(errorMsg);
-                else setNewState(intInput);
-            }
-	    }
-        //UART0_C2 |= UART_C2_TIE_MASK;   // enable transmit
-	}
-	else if( UART0_S1 & UART_S1_TDRE_MASK ){ // TX buffer is empty and ready for sending
-		UART0_D = printStr[printStr_out_index++];
-		if (printStr_in_index <= printStr_out_index){                  // TX over?
-            printStr_in_index = printStr_out_index = 0;
-		    UART0_C2 &= ~UART_C2_TIE_MASK;
-		}
-
-	}
-}
-*/
-
 
 void uart0_putchar (char ch){                                   
   while(!(UART0_S1 & UART0_S1_TDRE_MASK));

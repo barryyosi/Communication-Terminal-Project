@@ -121,8 +121,11 @@ void enterState(FSMstate state){
         case chatMode:
         {}break;
 
-        case fileTransferMode:
-        {}break;
+        case fileTransferMode: 
+        {
+//		 readFileName = 0;
+        }
+        break;
 
         case terminalConfigMode:
         {}break;

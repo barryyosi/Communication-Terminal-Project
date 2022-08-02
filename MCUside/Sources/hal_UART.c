@@ -68,7 +68,7 @@ void UART0_IRQHandler(){
                 
             }
          
-         
+
         /*  
 		else if (getState() != fileTransferMode || (getState() == fileTransferMode && !fileTransferReady )){
 			message[(idx++)% 32] = receivedByte;
@@ -98,7 +98,7 @@ void UART0_IRQHandler(){
 
 }
 void UART_readMessage(){
-    message[(idx++)% 32] = receivedByte;
+    message[(idx++)% MAX_MSG] = receivedByte;
     if (idx == (msgSize)){						
         readState = 0;
         readMsgSize = 0;
@@ -110,16 +110,9 @@ void UART_readMessage(){
 void UART_receiveFile(){
 	
 	if (!readFileName){ //if (getState() != fileTransferMode || (getState() == fileTransferMode && !fileTransferReady )){
-		message[(idx++)% 32] = receivedByte;
-		if (idx == (msgSize)){						
-			readState = 0;
-			readMsgSize = 0;
-			msgSize = 0;
-			idx = 0;
-			msgDisplayed = 0;
-			readFileName = 1;
+		UART_readMessage();
+        readFileName = 1;
 			// TODO - enable file DMA transfer	
-		}
 	}
 	else{	// File Transfer Mode
 		disable_irq(INT_UART0-16);               			    // Disable UART0 interrupt

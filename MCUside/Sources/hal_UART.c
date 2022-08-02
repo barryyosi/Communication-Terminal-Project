@@ -39,13 +39,37 @@ void UART0_IRQHandler(){
 		if (!readState){
 			tempState = receivedByte - '0';
 			readState = 1;
-		}
-		
+		}	
 		else if (readMsgSize != 2){
 			readMsgSize++;
 			msgSize += (receivedByte - '0')*pow(10, 2 - readMsgSize);
 			memset(&message[0], 0, sizeof(message));
-			} 
+			}
+        else{
+            switch(getState()){
+
+                case chatMode:
+                    UART_readMessage();
+                    break;
+
+                case fileTransferMode:
+                    if(!fileTransferReady){
+                        UART_readMessage();
+                        fileTransferReady = 1;
+                    } 
+                    else 
+                        UART_receiveFile();
+                    break;
+
+                default:
+                    UART_readMessage();
+                    break;
+                }
+                
+            }
+         
+         
+        /*  
 		else if (getState() != fileTransferMode || (getState() == fileTransferMode && !fileTransferReady )){
 			message[(idx++)% 32] = receivedByte;
 			if (idx == (msgSize)){						
@@ -62,7 +86,7 @@ void UART0_IRQHandler(){
 			UART_receiveFile();
 			// testFileTransfer++;
 		}
-			
+			*/
 	}
 		if(UART0_S1 & UART_S1_TDRE_MASK){   // TX buffer is empty and ready for sending
 //			UART0_D = printStr[writeStrIdx++];
@@ -73,7 +97,16 @@ void UART0_IRQHandler(){
 		}
 
 }
-
+void UART_readMessage(){
+    message[(idx++)% 32] = receivedByte;
+    if (idx == (msgSize)){						
+        readState = 0;
+        readMsgSize = 0;
+        msgSize = 0;
+        idx = 0;
+        msgDisplayed = 0;
+    }
+}
 void UART_receiveFile(){
 	
 	if (!readFileName){ //if (getState() != fileTransferMode || (getState() == fileTransferMode && !fileTransferReady )){

@@ -14,13 +14,13 @@ void receiveFile(char* fName){
     // Allocating first place in files DS.
     int i;
     if(fileCount){
-        for (i = fileCount - 1; i > 0; i--){
-            if(i == FILES_LIMIT - 1)
-                continue;
+        for (i = fileCount - 1; i >= 0; i--){
             pFiles[i+1] = pFiles[i];
+            //            if(i == FILES_LIMIT - 1)
+            //                continue;
         }
     }
-    pFiles[0] = &file;
+    pFiles[0] = file;
     fileCount++;
     
     readFileName = 0;

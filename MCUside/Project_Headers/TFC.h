@@ -51,7 +51,7 @@ typedef struct pFile{
     char* content;
 } pFile;
 
-pFile* pFiles[FILES_LIMIT];
+pFile pFiles[FILES_LIMIT];
 // char* files[20];
 // char* fileNames[20];
 char tempFile[MAX_FILE_SIZE];

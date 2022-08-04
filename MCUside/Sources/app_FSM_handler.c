@@ -28,6 +28,7 @@ int getDownCountAndDecr(){return downCount--;}
 
 void resetUpCount(){upCount = 0;}
 void resetDownCount(){downCount = 65535;}*/
+int scrollCounter = 0;
 
 void handleDevicesInterrupt(DeviceId deviceId){
 	char keyPressed;
@@ -75,21 +76,37 @@ void handleDevicesInterrupt(DeviceId deviceId){
 			break;
 			
 		 case PUSH_BUTTON_0:
-			 if (getState() == chatMode){
-				 // TODO - Send current message to PC
-				 mcuMessage[idxInMcuMessage - 1] = currentMessageChar;
-				//  messageSize = idxInMcuMessage - 
-                //  mcuMessage[0]
-                 mcuMessage[idxInMcuMessage] = '$';
+			 switch (getState())
+             {
+                case (chatMode):
+                {
+				    mcuMessage[idxInMcuMessage - 1] = currentMessageChar;
+                    mcuMessage[idxInMcuMessage] = '$';
 
-				 uart0_putstr(mcuMessage);
-				 memset(&mcuMessage[0], 0, sizeof(mcuMessage));
-				//  idxInMcuMessage = 0;
-				 lcd_clear();                                                                                                                                                                                                                                                                  
-				 mcuTyping = 0;
-			 }
-			 break;                                     
-
+				    uart0_putstr(mcuMessage);
+				     memset(&mcuMessage[0], 0, sizeof(mcuMessage));
+				    //  idxInMcuMessage = 0;
+				    lcd_clear();                                                                                                                                                                                                                                                                  
+				    mcuTyping = 0;
+			    }break;
+                case(fileTransferMode):
+                {
+                	char file1[MAX_MSG];
+                	strcpy(pFiles[scrollCounter].name, file1);
+                	
+                	char file2[MAX_MSG];
+					strcpy(pFiles[(scrollCounter++)%fileCount].name, file2);
+                	                	
+                	lcd_printNewLn(file1);
+                	lcd_printLine2(file2);
+                	
+                		
+                }break;
+                
+                default:
+                    break;
+			                                             
+             }
 		default:
 			break;
 

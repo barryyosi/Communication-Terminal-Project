@@ -19,8 +19,9 @@ public class TerminalGUI {
     JPanel FileTransferPanel;
     JPanel TerminalConfigPanel;
     JMenuBar menuBar;
-
     JTextArea textArea;
+
+    JOptionPane optionPane;
     public static final String PC = "PC";
     public static final String MCU = "MCU";
 
@@ -158,13 +159,19 @@ public class TerminalGUI {
         mcuFilesBox.add(mcuLabel);
         mcuFilesBox.add(mcuFileJList);
 
-        JButton reloadFiles = new JButton("Load files");
+        JButton reloadFiles = new JButton("Load PC files");
         reloadFiles.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                for (File file : pcFiles)
+                    if(!pcf.contains(file))
+                        pcf.addElement(file);
+                for (File file : Arrays.asList(pcf))
 
-                // TODO - Implement reloading files
+                    if(Arrays.asList(pcFiles).contains(file))
+                        pcf.removeElement(file);
             }
+
         });
 
         Box transferBox = Box.createVerticalBox();
@@ -334,4 +341,7 @@ public class TerminalGUI {
 
         }
 
+    public void showMessageDialog(String s) {
+        JOptionPane.showMessageDialog(null, s);
+    }
 }

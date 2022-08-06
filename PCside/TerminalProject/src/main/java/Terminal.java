@@ -2,20 +2,19 @@ import com.fazecast.jSerialComm.*;
 
 import javax.print.DocFlavor;
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+//import org.slf4j.Logger;
+
 // TODO - Implement receive method.
 public class Terminal {
     private static int MAX_STR_LEN = 32;
-    private static int EOS = '$';     // End of string character.
+    private static int EOS = '$'; // End of string character.
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
     protected static SerialPort sysPort;
@@ -28,19 +27,34 @@ public class Terminal {
     private static int STOP_BITS = 1;
     private static int DATA_BITS = 8;
 
-
-    public enum State {Sleep, Chat, FileTransfer, TerminalConfig }
+    private static int fileSize = 0;
+    public enum State {
+        Sleep,
+        Chat,
+        FileTransfer,
+        TerminalConfig
+    }
     public static State sysState = State.Sleep;
 
     // TODO - Make filesDir more OS generic
-//    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
-//    public static File filesDir = new File("src/main/Files");
-    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\University\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
-    public static File[] listOfFiles = filesDir.listFiles();
-    public static ArrayList<File> pcFiles = new ArrayList<File>(Arrays.stream(listOfFiles).toList());
-    public static ArrayList<File> mcuFiles = new ArrayList<File>();
+    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
+    //    public static File filesDir = new File("src/main/Files");
+    //    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\University\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
 
-    public static void initNewSerialPort(int baud){
+    private String filesPath = "PCside/TerminalProject/src/main/Files";
+    public static File[] listOfFiles = filesDir.listFiles();
+    public static ArrayList < File > pcFiles = new ArrayList < File > (Arrays.stream(listOfFiles).toList());
+    public static ArrayList < File > mcuFiles = new ArrayList < File > ();
+
+    private static String tempFileName = "";
+    private static String tempFileContent = "";
+    private static File tempFile;
+    private static boolean readFileName = false;
+
+    private static FileWriter writer = null;
+
+//    private static Logger logger = new Logger("terminal_log");
+    public static void initNewSerialPort(int baud) {
         if (sysPort != null && sysPort.isOpen()) {
             //closePort();
         }
@@ -53,12 +67,11 @@ public class Terminal {
 
     }
 
-    // TODO - Implement this.
 
     static boolean fileNameSent = false;
     public static void sendFile(File argFile) throws IOException {
         byte[] fileFrame;
-        Integer stateOrdinal = sysState.ordinal();      // Each message/fileTransfer syncs system state with MCU
+        Integer stateOrdinal = sysState.ordinal(); // Each message/fileTransfer syncs system state with MCU
 
         String fileSize = String.format("%04d", argFile.length());
         String fileName = argFile.getName();
@@ -66,21 +79,18 @@ public class Terminal {
         try {
             String fileContent = Files.readString(argFile.toPath());
             sendFrame(fileContent);
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             String message = e.getMessage();
-            JOptionPane.showMessageDialog(null,"Error sending file: \n" + message);
+            JOptionPane.showMessageDialog(null, "Error sending file: \n" + message);
         }
 
     }
-    public void recvFile(){}
 
-    // TODO - Might need to enhance to support other system modes.
-    public static void sendFrame(String msg){
+    public static void sendFrame(String msg) {
         byte[] frame;
-        Integer stateOrdinal = sysState.ordinal();      // Each message syncs system state with MCU
+        Integer stateOrdinal = sysState.ordinal(); // Each message syncs system state with MCU
         String msgLength = String.format("%02d", (msg.length()));
-        String frameString =  stateOrdinal.toString() + msgLength + msg;
+        String frameString = stateOrdinal.toString() + msgLength + msg;
 
         frame = frameString.toString().getBytes();
         System.out.println(frameString.toString());
@@ -94,61 +104,117 @@ public class Terminal {
         // TODO - Implement Ack receive.
         // while(sysPort.readBytes){}
     }
-    Terminal(){
-//        mcuMessageList = new ArrayList<Character>();
-    }
+    Terminal() {}
     public static void main(String[] args) throws IOException {
 
         TerminalGUI gui = new TerminalGUI();
         // TODO - config serialPort and baud-rate startup.
-        sysPort = SerialPort.getCommPort("COM6");
+        sysPort = SerialPort.getCommPort("COM5");
         initNewSerialPort(9600);
 
         sysPort.closePort();
         sysPort.openPort();
         sysPort.addDataListener(new SerialPortDataListener() {
             @Override
-            public int getListeningEvents(){
+            public int getListeningEvents() {
                 return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
             }
             @Override
-            public void serialEvent(SerialPortEvent event){
+            public void serialEvent(SerialPortEvent event) {
 
                 byte[] newData = event.getReceivedData();
-//                int msgSize = event.;
                 Character[] msg = new Character[newData.length];
                 char currentChar;
-                for (int i = 0; i < newData.length; i++) {
-                    currentChar = (char) newData[i];
-                    if ((int)currentChar == EOS) {
-                        mcuMessage[msgIndex++] = '\0';
-                        gui.chatPrint(gui.textArea, TerminalGUI.MCU, new String(mcuMessage));
-                        mcuMessage = new char[MAX_STR_LEN];
-                        msgIndex = 0;
+                switch (sysState) {
+
+                    case Sleep: // Sleep Mode.
+                        break;
+                    case Chat: // Chat mode message.
+                    {
+                        for (int i = 0; i < newData.length; i++) {
+                            System.out.println(sysState.toString() + ") received:" + (char)newData[i]);
+                            currentChar = (char)newData[i];
+
+                            if ((int) currentChar == EOS) {
+                                mcuMessage[msgIndex++] = '\0';
+//                                System.out.println("Message: " + mcuMessage);
+                                gui.chatPrint(gui.textArea, TerminalGUI.MCU, new String(mcuMessage));
+                                mcuMessage = new char[MAX_STR_LEN];
+                                msgIndex = 0;
+                            } else if (((int) currentChar >= 65 && (int) currentChar <= 90) || (int) currentChar >= 48 && (int) currentChar <= 57)
+                                mcuMessage[msgIndex++] = currentChar;
+
+                            //                            TODO - log it:
+                            //                             System.out.println(currentChar + " ascii value: " + (int) currentChar);
+                            //                        System.out.print(currentChar);
+                        }
+
                     }
-                    else if (((int)currentChar >= 65 && (int)currentChar <= 90) || (int)currentChar >= 48 && (int)currentChar <= 57)
-                        mcuMessage[msgIndex++] = currentChar;
+                    break;
+                    case FileTransfer: // File Transfer mode - fileName or fileContent received.
+                    {
+                        for (int i = 0; i < newData.length; i++) {
+                            currentChar = (char) newData[i];
+                            System.out.println(sysState.toString() + ") received: " + currentChar);
+                        }
+                        if (!readFileName) {
+                            for (int i = 0; i < newData.length; i++) {
+                                currentChar = (char) newData[i];
+                                if (currentChar == '$') {
+                                    System.out.println(tempFileName);
+                                    tempFile = new File(filesDir + "\\" + tempFileName);
+                                    tempFileName = "";
+                                    tempFile.getParentFile().mkdirs();
+                                    try {
+                                        tempFile.createNewFile();
+                                        writer = new FileWriter(tempFile);
+                                        readFileName = true;
+                                        System.out.println(tempFileName);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
 
-                    System.out.println(currentChar + " ascii value: " + (int)currentChar);
+                                } else
+                                    tempFileName += currentChar;
+
+                            }
+                            //                            System.out.println((++fileSize) + ") File byte received: " + currentChar);
+                        } else { // Read file content
+
+                            for (int i = 0; i < newData.length; i++) {
+                                currentChar = (char) newData[i];
+                                //                                System.out.println((++fileSize) + ") File byte received: " + currentChar);
+                                if (currentChar == '$') {
+                                    System.out.println(tempFileContent);
+                                    try {
+                                        writer.close();
+                                        tempFileContent = "";
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+
+                                    readFileName = false;
+
+                                } else {
+                                    try {
+                                        if (currentChar != '\u0000')
+                                            writer.append(currentChar);
+                                        tempFileContent += currentChar;
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    break;
+
                 }
-//                String str = new String(mcuMessage);
-//                System.out.println("\t message so far: " + str);
-
-//                String mcuMessageStr = new String(msg);
-
-//                System.out.println(mcuMessage.toString() + "Message size: " + mcuMessage.length);
-
-//                if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE)
-//                    return;
-//                byte[] newData = new byte[sysPort.bytesAvailable()];
-//                int tempName = sysPort.readBytes(newData, newData.length);
-//                if (sysState == State.Chat){
-//                    System.out.println("received STRING: " + newData.toString() + "\n" + "received int: " + tempName);
-//                    gui.chatPrint(gui.textArea,gui.MCU, );
-//                    String message = "PC:".concat(textField.getText());
-                }
+            }
         });
 
 
     }
+
 }

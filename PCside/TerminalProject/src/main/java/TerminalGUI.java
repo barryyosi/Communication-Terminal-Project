@@ -1,11 +1,13 @@
 import com.fazecast.jSerialComm.SerialPort;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ public class TerminalGUI {
     public static final String PC = "PC";
     public static final String MCU = "MCU";
 
-    private void initTerminalGUI() {
+    private void initTerminalGUI() throws IOException {
         // JFrame initialization.
         terminalFrame = new JFrame("Terminal");
         terminalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -99,7 +101,7 @@ public class TerminalGUI {
         terminalFrame.getContentPane().getComponent(1).setVisible(true);
 
     }
-    private void initChatModePanel(){
+    private void initChatModePanel() throws IOException {
         // Creating chat mode panel and adding relevant components.
         textArea= new JTextArea(30, 30);
 
@@ -126,14 +128,18 @@ public class TerminalGUI {
         });
 
 
+        BufferedImage mcuPushButtonReference = ImageIO.read(new File("src/main/Images/img3.jpeg"));
+        JLabel pbRefLabel = new JLabel(new ImageIcon(mcuPushButtonReference));
+
         ChatModePanel.add(label);
         ChatModePanel.add(textField);
         ChatModePanel.add(send);
         ChatModePanel.add(reset);
         ChatModePanel.add(BorderLayout.NORTH,textArea);
+        ChatModePanel.add(pbRefLabel);
 
     }
-    private void initFileTransferModePanel(){
+    private void initFileTransferModePanel() throws IOException {
 
         // Creating file transfer mode panel and adding relevant components.
         var pcFiles = Terminal.pcFiles.toArray(new File[0]);
@@ -145,7 +151,7 @@ public class TerminalGUI {
         DefaultListModel<File> pcf = new DefaultListModel<>();
         for (File file : pcFiles) pcf.addElement(file);
         JList<File> pcFileJList = new JList(pcf);
-        pcFileJList.setPreferredSize(new Dimension(850, 200));
+        pcFileJList.setPreferredSize(new Dimension(500, 200));
         pcFilesBox.add(pcLabel);
         pcFilesBox.add(pcFileJList);
 
@@ -153,9 +159,9 @@ public class TerminalGUI {
         Box mcuFilesBox = Box.createVerticalBox();
         JLabel mcuLabel = new JLabel("MCU Files");
         DefaultListModel<File> mcuf = new DefaultListModel();
-        for (File file : mcuFiles) pcf.addElement(file);
+        for (File file : mcuFiles) mcuf.addElement(file);
         JList<File> mcuFileJList = new JList(mcuf);
-        mcuFileJList.setPreferredSize(new Dimension(850, 200));
+        mcuFileJList.setPreferredSize(new Dimension(500, 200));
         mcuFilesBox.add(mcuLabel);
         mcuFilesBox.add(mcuFileJList);
 
@@ -166,8 +172,8 @@ public class TerminalGUI {
                 for (File file : pcFiles)
                     if(!pcf.contains(file))
                         pcf.addElement(file);
-                for (File file : Arrays.asList(pcf))
-
+                // TODO - verify this
+                for (DefaultListModel<File> file : Arrays.asList(pcf))
                     if(Arrays.asList(pcFiles).contains(file))
                         pcf.removeElement(file);
             }
@@ -226,6 +232,9 @@ public class TerminalGUI {
             }
         });
 
+        BufferedImage mcuPushButtonReference = ImageIO.read(new File("src/main/Images/img1.jpeg"));
+        JLabel pbRefLabel = new JLabel(new ImageIcon(mcuPushButtonReference));
+
         transferBox.add(moveToPC);
         transferBox.add(moveToMCU);
         transferBox.add(removeFromMCU);
@@ -234,6 +243,7 @@ public class TerminalGUI {
         FileTransferPanel.add(pcFilesBox);
         FileTransferPanel.add(transferBox);
         FileTransferPanel.add(mcuFilesBox);
+        FileTransferPanel.add(pbRefLabel);
 
     }
     private void initTerminalConfigModePanel() {
@@ -280,7 +290,7 @@ public class TerminalGUI {
         comBox.add(comDropdown);
         TerminalConfigPanel.add(terminalConfigBox);
     }
-    private void initSleepModePanel(){
+    private void initSleepModePanel() throws IOException {
         JButton ChatModeButton = new JButton("Chat Mode");
         ChatModeButton.addActionListener(new ActionListener() {
             @Override
@@ -311,16 +321,20 @@ public class TerminalGUI {
             }
         });
 
+        BufferedImage mcuPushButtonReference = ImageIO.read(new File("src/main/Images/img2.jpeg"));
+        JLabel pbRefLabel = new JLabel(new ImageIcon(mcuPushButtonReference));
+
         SleepModePanel.add(ChatModeButton);
         SleepModePanel.add(FileTransferButton);
         SleepModePanel.add(TerminalConfigButton);
+        SleepModePanel.add(pbRefLabel);
     }
     protected void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
         argTextArea.append( messageCommitter + ": " + msg +"\n");
 //        if(messageCommitter == PC)
 //            Terminal.sendFrame(msg);
     }
-    public TerminalGUI() {
+    public TerminalGUI() throws IOException {
 
         initTerminalGUI();
         terminalFrame.setVisible(true);

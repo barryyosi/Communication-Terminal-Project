@@ -1,33 +1,30 @@
 import com.fazecast.jSerialComm.*;
 
-import javax.print.DocFlavor;
+
 import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+
 
 //import org.slf4j.Logger;
 
 // TODO - Implement receive method.
 public class Terminal {
-    private static int MAX_STR_LEN = 32;
-    private static int EOS = '$'; // End of string character.
+    private static final int MAX_STR_LEN = 32;
+    private static final int EOS = '$'; // End of string character.
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
     protected static SerialPort sysPort;
     protected static Integer sysBaudRate;
 
-    private InputStream inputStream;
-    private OutputStream outputStream;
     public static int msgIndex = 0;
     public static char[] mcuMessage = new char[MAX_STR_LEN];
     private static int STOP_BITS = 1;
     private static int DATA_BITS = 8;
 
-    private static int fileSize = 0;
     public enum State {
         Sleep,
         Chat,
@@ -37,8 +34,8 @@ public class Terminal {
     public static State sysState = State.Sleep;
 
     // TODO - Make filesDir more OS generic
-    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
-    //    public static File filesDir = new File("src/main/Files");
+//    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
+    public static File filesDir = new File("src/main/Files");
     //    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\University\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
 
     private String filesPath = "PCside/TerminalProject/src/main/Files";

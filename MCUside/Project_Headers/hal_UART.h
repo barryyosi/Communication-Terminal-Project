@@ -7,6 +7,7 @@ void InitUARTs();
 void UART0_IRQHandler();
 void UART_readMessage();
 void UART_receiveFile();
+void UART_sendFile(int fileIndex);
 void UART_PrintLine(UART_MemMapPtr channel, char* str);
 void UART_ReadLine(char* str, int strLen);
 void UART_PrintMenu();

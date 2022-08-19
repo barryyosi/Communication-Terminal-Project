@@ -16,7 +16,9 @@ void inits() {
 	
 	initKeypad();
 	initPushButton(0);
-	
+	initPushButton(1);
+	initPushButton(2);
+
 	//InitPIT(getX());
 	InitUARTs();
 	initLCD();

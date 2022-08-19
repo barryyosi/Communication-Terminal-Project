@@ -2,6 +2,7 @@
 #ifndef TFC_H_
 #define TFC_H_
 #define MAX_MSG 32
+#define MAX_LINE 16
 #define FILES_LIMIT 10
 #define MAX_FILE_SIZE 1000
 #include <stdint.h>
@@ -51,7 +52,7 @@ typedef struct pFile{
     char* content;
 } pFile;
 
-pFile pFiles[FILES_LIMIT];
+pFile* pFiles[FILES_LIMIT];
 // char* files[20];
 // char* fileNames[20];
 char tempFile[MAX_FILE_SIZE];
@@ -60,4 +61,8 @@ char* tempFile2;
 int fileSizes[20];
 int fileCount;
 int currentFileSize;
+int currentPointedFileIndex;
+
+int terminalConfigReady;
+int readBaudRateReady;
 #endif /* TFC_H_ */

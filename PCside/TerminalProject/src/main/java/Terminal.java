@@ -14,7 +14,7 @@ import java.util.Arrays;
 // TODO - Implement receive method.
 public class Terminal {
     private static final int MAX_STR_LEN = 32;
-    private static final int EOS = '$'; // End of string character.
+    private static final int EOS = '$'; // nd of string character.
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
     protected static SerialPort sysPort;
@@ -33,12 +33,13 @@ public class Terminal {
     }
     public static State sysState = State.Sleep;
 
+    //    public static File filesDir = new File("src/main/Files");
+    //    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
     // TODO - Make filesDir more OS generic
-//    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
-    public static File filesDir = new File("src/main/Files");
+    public static File MCU2PC = new File("PCside/TerminalProject/src/main/MCU2PC");
+    public static File filesDir = new File("PCside/TerminalProject/src/main/PC2MCU");
     //    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\University\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
 
-    private String filesPath = "PCside/TerminalProject/src/main/Files";
     public static File[] listOfFiles = filesDir.listFiles();
     public static ArrayList < File > pcFiles = new ArrayList < File > (Arrays.stream(listOfFiles).toList());
     public static ArrayList < File > mcuFiles = new ArrayList < File > ();
@@ -50,11 +51,125 @@ public class Terminal {
 
     private static FileWriter writer = null;
 
-//    private static Logger logger = new Logger("terminal_log");
-    public static void initNewSerialPort(int baud) {
-        if (sysPort != null && sysPort.isOpen()) {
-            //closePort();
+    static TerminalGUI gui;
+
+    static {
+        try {
+            gui = new TerminalGUI();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    static SerialPortDataListener serialPortListener = new SerialPortDataListener() {
+        @Override
+        public int getListeningEvents() {
+            return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
+        }
+        @Override
+        public void serialEvent(SerialPortEvent event) {
+
+            byte[] newData = event.getReceivedData();
+            Character[] msg = new Character[newData.length];
+            char currentChar;
+            switch (sysState) {
+
+                case Sleep: // Sleep Mode.
+                    break;
+                case Chat: // Chat mode message.
+                {
+                    for (int i = 0; i < newData.length; i++) {
+                        System.out.println(sysState.toString() + ") received:" + (char)newData[i]);
+                        currentChar = (char)newData[i];
+
+                        if ((int) currentChar == EOS) {
+                            mcuMessage[msgIndex++] = '\0';
+//                                System.out.println("Message: " + mcuMessage);
+                            gui.chatPrint(gui.textArea, TerminalGUI.MCU, new String(mcuMessage));
+                            mcuMessage = new char[MAX_STR_LEN];
+                            msgIndex = 0;
+                        } else if (((int) currentChar >= 65 && (int) currentChar <= 90) || (int) currentChar >= 48 && (int) currentChar <= 57)
+                            mcuMessage[msgIndex++] = currentChar;
+
+                        //                            TODO - log it:
+                        //                             System.out.println(currentChar + " ascii value: " + (int) currentChar);
+                        //                        System.out.print(currentChar);
+                    }
+
+                }
+                break;
+                case FileTransfer: // File Transfer mode - fileName or fileContent received.
+                {
+                    for (int i = 0; i < newData.length; i++) {
+                        currentChar = (char) newData[i];
+                        System.out.println(sysState.toString() + ") received: " + currentChar);
+                    }
+                    if (!readFileName) {
+                        for (int i = 0; i < newData.length; i++) {
+                            currentChar = (char) newData[i];
+                            if (currentChar == '$') {
+                                System.out.println(tempFileName);
+                                tempFile = new File(MCU2PC + "\\" + tempFileName);
+                                tempFileName = "";
+                                tempFile.getParentFile().mkdirs();
+                                try {
+                                    tempFile.createNewFile();
+                                    writer = new FileWriter(tempFile);
+                                    readFileName = true;
+                                    System.out.println(tempFileName);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                            } else
+                                tempFileName += currentChar;
+
+                        }
+
+                    } else { // Read file content
+
+                        for (int i = 0; i < newData.length; i++) {
+                            currentChar = (char) newData[i];
+                            //                                System.out.println((++fileSize) + ") File byte received: " + currentChar);
+                            if (currentChar == '$') {
+                                System.out.println(tempFileContent);
+                                try {
+                                    writer.close();
+                                    tempFileContent = "";
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                                readFileName = false;
+
+                            } else {
+                                try {
+                                    if (currentChar != '\u0000')
+                                        writer.append(currentChar);
+                                    tempFileContent += currentChar;
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+
+                    }
+                }
+                break;
+
+            }
+        }
+    };
+//    private static Logger logger = new Logger("terminal_log");
+
+    public static void initNewSerialPort(int baud) {
+//        if (sysPort != null && sysPort.isOpen()) {
+//            //closePort();
+//        }
+
+        sysPort.closePort();
+        sysPort.openPort();
+        sysPort.addDataListener(serialPortListener);
         sysPort.setParity(SerialPort.NO_PARITY);
         sysPort.setNumStopBits(STOP_BITS);
         sysPort.setNumDataBits(DATA_BITS);
@@ -63,7 +178,6 @@ public class Terminal {
         JOptionPane.showMessageDialog(null, message);
 
     }
-
 
     static boolean fileNameSent = false;
     public static void sendFile(File argFile) throws IOException {
@@ -86,7 +200,7 @@ public class Terminal {
     public static void sendFrame(String msg) {
         byte[] frame;
         Integer stateOrdinal = sysState.ordinal(); // Each message syncs system state with MCU
-        String msgLength = String.format("%02d", (msg.length()));
+        String msgLength = String.format("%04d", (msg.length()));
         String frameString = stateOrdinal.toString() + msgLength + msg;
 
         frame = frameString.toString().getBytes();
@@ -103,113 +217,6 @@ public class Terminal {
     }
     Terminal() {}
     public static void main(String[] args) throws IOException {
-
-        TerminalGUI gui = new TerminalGUI();
-        // TODO - config serialPort and baud-rate startup.
-        sysPort = SerialPort.getCommPort("COM5");
-        initNewSerialPort(9600);
-
-        sysPort.closePort();
-        sysPort.openPort();
-        sysPort.addDataListener(new SerialPortDataListener() {
-            @Override
-            public int getListeningEvents() {
-                return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
-            }
-            @Override
-            public void serialEvent(SerialPortEvent event) {
-
-                byte[] newData = event.getReceivedData();
-                Character[] msg = new Character[newData.length];
-                char currentChar;
-                switch (sysState) {
-
-                    case Sleep: // Sleep Mode.
-                        break;
-                    case Chat: // Chat mode message.
-                    {
-                        for (int i = 0; i < newData.length; i++) {
-                            System.out.println(sysState.toString() + ") received:" + (char)newData[i]);
-                            currentChar = (char)newData[i];
-
-                            if ((int) currentChar == EOS) {
-                                mcuMessage[msgIndex++] = '\0';
-//                                System.out.println("Message: " + mcuMessage);
-                                gui.chatPrint(gui.textArea, TerminalGUI.MCU, new String(mcuMessage));
-                                mcuMessage = new char[MAX_STR_LEN];
-                                msgIndex = 0;
-                            } else if (((int) currentChar >= 65 && (int) currentChar <= 90) || (int) currentChar >= 48 && (int) currentChar <= 57)
-                                mcuMessage[msgIndex++] = currentChar;
-
-                            //                            TODO - log it:
-                            //                             System.out.println(currentChar + " ascii value: " + (int) currentChar);
-                            //                        System.out.print(currentChar);
-                        }
-
-                    }
-                    break;
-                    case FileTransfer: // File Transfer mode - fileName or fileContent received.
-                    {
-                        for (int i = 0; i < newData.length; i++) {
-                            currentChar = (char) newData[i];
-                            System.out.println(sysState.toString() + ") received: " + currentChar);
-                        }
-                        if (!readFileName) {
-                            for (int i = 0; i < newData.length; i++) {
-                                currentChar = (char) newData[i];
-                                if (currentChar == '$') {
-                                    System.out.println(tempFileName);
-                                    tempFile = new File(filesDir + "\\" + tempFileName);
-                                    tempFileName = "";
-                                    tempFile.getParentFile().mkdirs();
-                                    try {
-                                        tempFile.createNewFile();
-                                        writer = new FileWriter(tempFile);
-                                        readFileName = true;
-                                        System.out.println(tempFileName);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-
-                                } else
-                                    tempFileName += currentChar;
-
-                            }
-                            //                            System.out.println((++fileSize) + ") File byte received: " + currentChar);
-                        } else { // Read file content
-
-                            for (int i = 0; i < newData.length; i++) {
-                                currentChar = (char) newData[i];
-                                //                                System.out.println((++fileSize) + ") File byte received: " + currentChar);
-                                if (currentChar == '$') {
-                                    System.out.println(tempFileContent);
-                                    try {
-                                        writer.close();
-                                        tempFileContent = "";
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-
-                                    readFileName = false;
-
-                                } else {
-                                    try {
-                                        if (currentChar != '\u0000')
-                                            writer.append(currentChar);
-                                        tempFileContent += currentChar;
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                    break;
-
-                }
-            }
-        });
 
 
     }

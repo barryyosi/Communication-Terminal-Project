@@ -1,216 +1,162 @@
 #include "app_FSM_handler.h"
+
 #include "BoardSupport.h"
+
 #include "MKL25Z4.h"
+
 #include "hal_UART.h"
+
 #include "hal_ADC_DAC.h"
+
 #include "hal_LCD.h"
+
 #include "hal_timers.h"
+
 #include "app_FSM_handler.h"
 
 
-FSMstate sysState = sleepMode;//, g_newState = state0;
+FSMstate sysState = sleepMode;
 
-/*
-int X = 500;
+void handleDevicesInterrupt(DeviceId deviceId) {
+  char keyPressed;
+  char messagePrefix[] = "MCU:";
+  int messageSize;
+  switch (deviceId) {
+    /*
 
-int upCount = 0;
-int downCount = 65535;
+            // case PUSH_BUTTON_1:
+            //     state = state2;
 
-int getX(){return X;}
-void setX(int newX){
-    X = newX;
-    updatePIT(X);
-}
+            // 	break;
 
+            // case PUSH_BUTTON_2:
+            //     state = state3;
+    		// 	break;
 
-int getUpCountAndInc(){return upCount++;}
-int getDownCountAndDecr(){return downCount--;}
+            // case PUSH_BUTTON_3:
+            //     break;
 
-void resetUpCount(){upCount = 0;}
-void resetDownCount(){downCount = 65535;}*/
-int scrollCounter = 0;
-
-void handleDevicesInterrupt(DeviceId deviceId){
-	char keyPressed;
-	char messagePrefix[] = "MCU:";
-	int messageSize;
-    switch (deviceId)
-    {
-/*
-
-        // case PUSH_BUTTON_1:
-        //     state = state2;
-
-        // 	break;
-
-        // case PUSH_BUTTON_2:
-        //     state = state3;
-		// 	break;
-
-        // case PUSH_BUTTON_3:
-        //     break;
-
-        // case SWITCH_0:
-        // case SWITCH_1:
-        // case SWITCH_2:
-        // case SWITCH_3:
-		// 	//getSwitchesState();
-        // 	break;
-*/
-        case KEYPAD_IRQ:
-			if (getState() == chatMode){
-				if (mcuTyping != 1){
-					lcd_printNewLn(messagePrefix);
-					mcuTyping = 1;
-					idxInMcuMessage = 0;
-				}
-                keyPressed = keypad_scan();		        // Scanning the keypad & saving the pressed key
-                clearIRQFlag(Keypad_IRQ);
-                if(keyPressed != 'z'){					// Avoiding undefined char.
-					lcd_putchar2(keyPressed);
-					currentMessageChar = keyPressed;
-                }                                                                                                                                                                                            
-			    pitEnable();
-			    
-            }
-			break;
-			
-		 case PUSH_BUTTON_0:
-			 switch (getState())
-             {
-                case (chatMode):
-                {
-				    mcuMessage[idxInMcuMessage - 1] = currentMessageChar;
-                    mcuMessage[idxInMcuMessage] = '$';
-
-				    uart0_putstr(mcuMessage);
-				     memset(&mcuMessage[0], 0, sizeof(mcuMessage));
-				    //  idxInMcuMessage = 0;
-				    lcd_clear();                                                                                                                                                                                                                                                                  
-				    mcuTyping = 0;
-			    }break;
-                case(fileTransferMode):
-                {
-                	char file1[MAX_MSG];
-                	strcpy(pFiles[scrollCounter].name, file1);
-                	
-                	char file2[MAX_MSG];
-					strcpy(pFiles[(scrollCounter++)%fileCount].name, file2);
-                	                	
-                	lcd_printNewLn(file1);
-                	lcd_printLine2(file2);
-                	
-                		
-                }break;
-                
-                default:
-                    break;
-			                                             
-             }
-		default:
-			break;
-
-    }
-	// if(PUSH_BUTTON_0 <= deviceId && PUSH_BUTTON_3 >= deviceId)
-	// 	enterState(state);
-
-}
-
-
-void setState(FSMstate argState){ sysState = argState;}
-
-FSMstate getState(){ return sysState; }
-
-void updateState(FSMstate argState){
-    if(getState() != argState)
-//    	if (getState() == fileTransferMode)		// Nullifying fileTransferReady flag, if no longer on fileTransferMode.
-//    		fileTransferReady = 0;
-    	exitState(getState());
-        setState(argState);
-        enterState(argState);
-}
-
-void enterState(FSMstate state){
-    switch(state){
-        case sleepMode:
-        {}break;
-
-        case chatMode:
-        {}break;
-
-        case fileTransferMode: 
-        {
-//		 readFileName = 0;
-        }
-        break;
-
-        case terminalConfigMode:
-        {}break;
-/*
-    //     case state1:
-    //     case state2:
-    //     case state3:
-    //     {
-	// 		startPitCount();
-    //         break;
-    //     }
-    //     case state5:{
-    //         enableADC();
-    //         break;
-    //     }
-
-    //     case state6:
-    //     {
-    //         resetDownCount();
-	// 		resetUpCount();
-	// 		break;
-    //     }
-    //     case state7:
-    //     {
-    //         UART_PrintMenu();
-    //         setNewState(state0);
-	// 		break;
-    //     }
-    //     case state8:
-    //     {
-	//         enable_irq(INT_PORTD-16);
-	// 		break;
-    //     }
-    // }
+            // case SWITCH_0:
+            // case SWITCH_1:
+            // case SWITCH_2:
+            // case SWITCH_3:
+    		// 	//getSwitchesState();
+            // 	break;
     */
-}
-}
+  case KEYPAD_IRQ:
+    if (getState() == chatMode) {
+      if (mcuTyping != 1) {
+        lcd_printNewLn(messagePrefix);
+        mcuTyping = 1;
+        idxInMcuMessage = 0;
+      }
+      keyPressed = keypad_scan(); // Scanning the keypad & saving the pressed key
+      clearIRQFlag(Keypad_IRQ);
+      if (keyPressed != 'z') { // Avoiding undefined char.
+        lcd_putchar2(keyPressed);
+        pitEnable();
+        currentMessageChar = keyPressed;
+        
+      }
+      
 
-void exitState(FSMstate state){
-    lcd_clear();
-    switch(state){
-        case sleepMode:
-        {}break;
-
-        case chatMode:
-        {}break;
-
-        case fileTransferMode:
-        {}break;
-
-        case terminalConfigMode:
-        {}break;
-/*
-
-		/*case state1:
-        case state2:
-        case state3:
-        {
-			stopPitCount();
-            break;
-        }
-        case state5:
-            disableADC();
-            break;
-
-        case state8:
-	        disable_irq(INT_PORTD-16);
-		default:
-			break;*/
     }
+    break;
+
+  case PUSH_BUTTON_0:
+    switch (getState()) {
+    case (chatMode): {
+      mcuMessage[idxInMcuMessage - 1] = currentMessageChar;
+      mcuMessage[idxInMcuMessage] = '$';
+
+      uart0_putstr(mcuMessage);
+      memset( & mcuMessage[0], 0, sizeof(mcuMessage));
+      lcd_clear();
+      mcuTyping = 0;
+    } break;
+    
+    case (fileTransferMode): {
+      if (fileCount == 1) {
+        char firstFileName[MAX_MSG];
+        strcpy(pFiles[0]->name, firstFileName);
+        lcd_printNewLn(firstFileName);
+
+      } else if (fileCount >= 2) 
+          filesScrollMenu();
+    }break;
+
+    default:
+      break;
+    } break;
+  
+  case PUSH_BUTTON_1:
+    switch(getState()){
+      case fileTransferMode:
+          lcd_printFile(currentPointedFileIndex);
+    } break;
+    
+   case PUSH_BUTTON_2:
+	switch(getState()){
+	  case fileTransferMode:
+		  UART_sendFile(currentPointedFileIndex);
+	} break;
+  default:
+      break;
+
+  }
+}
+
+void setState(FSMstate argState) {
+  sysState = argState;
+}
+
+FSMstate getState() {
+  return sysState;
+}
+
+void updateState(FSMstate argState) {
+  if (getState() != argState)
+    exitState(getState());
+  setState(argState);
+  enterState(argState);
+}
+
+void enterState(FSMstate state) {
+  switch (state) {
+  case sleepMode: {}
+  break;
+
+  case chatMode: {}
+  break;
+
+  case fileTransferMode: {
+	  
+  }
+  break;
+
+  case terminalConfigMode: {}
+  break;
+  }
+}
+
+void exitState(FSMstate state) {
+  lcd_clear();
+  switch (state) {
+  case sleepMode: {}
+  break;
+
+  case chatMode: {}
+  break;
+
+  case fileTransferMode: {
+	  fileTransferReady = 0;
+  }
+  break;
+
+  case terminalConfigMode: {
+	  terminalConfigReady = 0;
+  }
+  break;
+
+  }
 }

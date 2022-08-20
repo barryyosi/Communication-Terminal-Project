@@ -42,6 +42,8 @@ public class Terminal {
 
     public static File[] listOfFiles = filesDir.listFiles();
     public static ArrayList < File > pcFiles = new ArrayList < File > (Arrays.stream(listOfFiles).toList());
+
+    public static ArrayList < File > mcu2pcFiles = new ArrayList < File > (Arrays.stream(MCU2PC.listFiles()).toList());
     public static ArrayList < File > mcuFiles = new ArrayList < File > ();
 
     private static String tempFileName = "";
@@ -102,28 +104,31 @@ public class Terminal {
                 {
                     for (int i = 0; i < newData.length; i++) {
                         currentChar = (char) newData[i];
-                        System.out.println(sysState.toString() + ") received: " + currentChar);
+                        System.out.println(i + ") received: " + currentChar);
                     }
                     if (!readFileName) {
                         for (int i = 0; i < newData.length; i++) {
                             currentChar = (char) newData[i];
                             if (currentChar == '$') {
-                                System.out.println(tempFileName);
-                                tempFile = new File(MCU2PC + "\\" + tempFileName);
+                                System.out.println(tempFileName + "read file name. ");
+                                tempFile = new File(MCU2PC + "/" + tempFileName);
                                 tempFileName = "";
                                 tempFile.getParentFile().mkdirs();
                                 try {
                                     tempFile.createNewFile();
                                     writer = new FileWriter(tempFile);
                                     readFileName = true;
-                                    System.out.println(tempFileName);
+                                    System.out.println(tempFileName + " open to write. ");
                                 } catch (IOException e) {
+                                    System.out.println("File Path: " + tempFile.getAbsolutePath());
+                                    System.out.println(e.toString());
                                     throw new RuntimeException(e);
                                 }
 
-                            } else
+                            } else if (((int) currentChar >= 65 && (int) currentChar <= 122) || (int) currentChar >= 46 && (int) currentChar <= 57 ) {
+                                System.out.println(tempFileName);
                                 tempFileName += currentChar;
-
+                            }
                         }
 
                     } else { // Read file content
@@ -194,6 +199,16 @@ public class Terminal {
             String message = e.getMessage();
             JOptionPane.showMessageDialog(null, "Error sending file: \n" + message);
         }
+
+    }
+    public static void requestFile(File argFile) throws IOException {
+        byte[] fileFrame;
+        Integer stateOrdinal = sysState.ordinal(); // Each message/fileTransfer syncs system state with MCU
+
+        String fileSize = String.format("%04d", argFile.length());
+        String fileName = argFile.getName();
+        sendFrame(fileName + fileSize);
+        sendFrame("$");
 
     }
 

@@ -57,11 +57,19 @@ void UART0_IRQHandler() {
         if (!fileTransferReady || !readFileName) {
           UART_readMessage();
         } else {
-          disable_irq(INT_UART0 - 16); // Disable UART0 interrupt
-          enableDMA();
-          //                    	UART_receiveFile();
-          msgDisplayed = 1;
-
+        	for (i = 0; i < fileCount; i++){
+        		if (!strcmp(fileName,pFiles[i]->name)){
+        			send_recv_flag = 1;
+        			sentFileIndex = i;
+        			msgDisplayed = 1;
+        			break;
+        		}
+        	}
+        	if(!send_recv_flag){
+			  disable_irq(INT_UART0 - 16); // Disable UART0 interrupt
+			  enableDMA();
+			  msgDisplayed = 1;
+        	}
         }
         break;
  	 
@@ -119,20 +127,29 @@ void UART_receiveFile() {
 }
 
 void UART_sendFile(int fileIndex) {
-  char * nameFrame = (char * ) malloc(strlen(pFiles[fileIndex] -> name) + 1);
-  int i;
-  for (i = 0; i < strlen(pFiles[fileIndex] -> name); i++)
-	  nameFrame[i] = ((pFiles[fileIndex])-> name)[i]; 
-  nameFrame[strlen(pFiles[fileIndex] -> name)] = '$';
+  char * nameFrame = (char * ) malloc(strlen(pFiles[fileIndex] -> name) + 2);
+  strcpy(nameFrame, pFiles[fileIndex] -> name);
+  strcat(nameFrame, "$\0");
   uart0_putstr(nameFrame);
   free(nameFrame);
 
-  char * contentFrame = (char * ) malloc(strlen(pFiles[fileIndex] -> content) + 1);
-  for (i = 0; i < strlen(pFiles[fileIndex] -> content); i++)
-	  contentFrame[i] = ((pFiles[fileIndex])->content)[i]; 
-  contentFrame[strlen(pFiles[fileIndex] -> content)] = '$';
+//  char * contentFrame = (char * ) malloc(pFiles[fileIndex] -> size + 2);
+  char contentFrame[MAX_FILE_SIZE];
+  strcpy(contentFrame, pFiles[fileIndex] -> content);
+  
+  contentFrame[pFiles[fileIndex] -> size] = '$';
+  contentFrame[pFiles[fileIndex] -> size + 1] = '\0';
+  
   uart0_putstr(contentFrame);
   free(contentFrame);
+  
+  readFileName = 0;
+  enable_irq(INT_UART0 - 16); // Enable UART0 interrupt
+  readState = 0;
+  readMsgSize = 0;
+  msgSize = 0;
+  idx = 0;
+  msgDisplayed = 0;
 }
 
 void uart0_putchar(char ch) {

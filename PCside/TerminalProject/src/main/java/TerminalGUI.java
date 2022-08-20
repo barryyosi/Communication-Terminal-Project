@@ -23,7 +23,10 @@ public class TerminalGUI {
     public static final String PC = "PC";
     public static final String MCU = "MCU";
     private File[] pcFiles;
+    private File[] mcu2pcFiles;
     private File[] mcuFiles;
+
+    private boolean initialConfig = false;
 
     private void initTerminalGUI() throws IOException {
         // JFrame initialization.
@@ -141,17 +144,28 @@ public class TerminalGUI {
 
         // Creating file transfer mode panel and adding relevant components.
         pcFiles = Terminal.pcFiles.toArray(new File[0]);
+        mcu2pcFiles = Terminal.mcu2pcFiles.toArray(new File[0]);
         mcuFiles = Terminal.mcuFiles.toArray(new File[0]);
 
-        // PC Files box.
+        // PC2MCU Files box.
         Box pcFilesBox = Box.createVerticalBox();
-        JLabel pcLabel = new JLabel("PC Files");
+        JLabel pcLabel = new JLabel("PC2MCU Files");
         DefaultListModel<File> pcf = new DefaultListModel<>();
         for (File file : pcFiles) pcf.addElement(file);
         JList<File> pcFileJList = new JList(pcf);
         pcFileJList.setPreferredSize(new Dimension(500, 200));
         pcFilesBox.add(pcLabel);
         pcFilesBox.add(pcFileJList);
+
+        // MCU2PC Files box.
+        Box mcu2pcFilesBox = Box.createVerticalBox();
+        JLabel mcu2pcLabel = new JLabel("MCU2PC Files");
+        DefaultListModel<File> mcu2pcf = new DefaultListModel<>();
+        for (File file : mcu2pcFiles) mcu2pcf.addElement(file);
+        JList<File> mcu2pcFileJList = new JList(mcu2pcf);
+        pcFileJList.setPreferredSize(new Dimension(500, 200));
+        mcu2pcFilesBox.add(mcu2pcLabel);
+        mcu2pcFilesBox.add(mcu2pcFileJList);
 
         // MCU Files box.
         Box mcuFilesBox = Box.createVerticalBox();
@@ -173,15 +187,14 @@ public class TerminalGUI {
                 pcFiles = Terminal.pcFiles.toArray(new File[0]);
                 pcf.removeAllElements();
                 for (File file : pcFiles) pcf.addElement(file);
-//                for (File file : pcFiles) pcf.addElement(file);
 
-//                for (File file : Terminal.pcFiles)
-//                    if(!pcf.contains(file))
-//                        pcf.addElement(file);
-//                // TODO - verify this
-//                for (DefaultListModel<File> file : Arrays.asList(pcf))
-//                    if(Arrays.asList(pcFiles).contains(file))
-//                        pcf.removeElement(file);
+
+                Terminal.mcu2pcFiles = new ArrayList < File > (Arrays.stream(Terminal.MCU2PC.listFiles()).toList());
+                mcu2pcFiles = Terminal.mcu2pcFiles.toArray(new File[0]);
+                mcu2pcf.removeAllElements();
+                for (File file : mcu2pcFiles) mcu2pcf.addElement(file);
+
+
             }
 
         });
@@ -192,12 +205,15 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 var selected = mcuFileJList.getSelectedValuesList();
-                for (File file : selected){;
-                    if (pcf.contains(file))
-                        JOptionPane.showMessageDialog(null, "File already exist in PC");
-                    else
-                        pcf.addElement(file);
+                for (File file : selected){
+                    try {
+                        Terminal.requestFile(file);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
                 }
+
 
             }
         });
@@ -225,6 +241,7 @@ public class TerminalGUI {
 
         FileTransferPanel.add(reloadFiles);
         FileTransferPanel.add(pcFilesBox);
+        FileTransferPanel.add(mcu2pcFilesBox);
         FileTransferPanel.add(transferBox);
         FileTransferPanel.add(mcuFilesBox);
 //        FileTransferPanel.add(pbRefLabel);
@@ -258,7 +275,10 @@ public class TerminalGUI {
                 JOptionPane.showMessageDialog(null, "Communication port and baud rate updated.");
                 Terminal.initNewSerialPort(Terminal.sysBaudRate);   // Configuring a new serial port based on selected
                                                                     // parameters.
-//                switchPane(SleepModePanel);
+                if(!initialConfig){
+                    switchPane(SleepModePanel);
+                    initialConfig = true;
+                }
             }
         });
 

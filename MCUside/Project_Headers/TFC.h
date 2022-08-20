@@ -46,22 +46,30 @@ int fileTransferReady;
 int readFileName;
 int dmaIrqFlag;
 
+//typedef struct pFile{
+//    int size;
+//    char* name;
+//    char* content;
+//} pFile;
+
 typedef struct pFile{
     int size;
-    char* name;
-    char* content;
+    char name[MAX_MSG];
+    char content[MAX_FILE_SIZE];
 } pFile;
 
 pFile* pFiles[FILES_LIMIT];
 // char* files[20];
 // char* fileNames[20];
 char tempFile[MAX_FILE_SIZE];
-char tempFile3[MAX_FILE_SIZE];
+
 char* tempFile2;
 int fileSizes[20];
 int fileCount;
 int currentFileSize;
 int currentPointedFileIndex;
+int sentFileIndex;
+int send_recv_flag;	// 0 -> receive file, 1 -> file sent
 
 int terminalConfigReady;
 int readBaudRateReady;

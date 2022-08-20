@@ -5,7 +5,9 @@
 
 #define CORE_CLOCK 48000000
 
-const char transferMsg[] = "received";
+const char receiveFileMsg[] = "received";
+const char sendFileMsg[] = "being sent";
+
 int main(void) {
 	dmaIrqFlag = 0;
 	fileCount = 0;
@@ -16,17 +18,18 @@ int main(void) {
 	idx = 0;
 	terminalConfigReady = 0;
 	readBaudRateReady = 0;
+	send_recv_flag = 0;
 	inits();
 	// TODO - process file size before file is received.
 	currentFileSize = 1000;
 	pFile aFile, bFile, cFile;
-	aFile.content = "aaaaaa";
-	bFile.content = "bbbbbbbbb";
-	cFile.content = "cccccccccccccccc";
+	strcpy(aFile.content,"aaaaaa");
+	strcpy(bFile.content,"bbbbbbbbb");
+	strcpy(cFile.content, "cccccccccccccccc");
 
-	aFile.name = "aFile.txt";
-	bFile.name = "bFile.txt";
-	cFile.name = "cFile.txt";
+	strcpy(aFile.name, "aFile.txt\0");
+	strcpy(bFile.name, "bFile.txt\0");
+	strcpy(cFile.name, "cFile.txt\0");
 
 	aFile.size = 6;
 	bFile.size = 9;
@@ -45,13 +48,22 @@ int main(void) {
 				Uart0_Br_Sbr(CORE_CLOCK / 2 / 1000, atoi(message));
 			} else {
 				lcd_printNewLn(message);
-				if (readFileName) {	// Add flag to not show this when file is being transferred.
+				if (readFileName) {
 					lcd_printNewLn(fileName);
-					lcd_printSecondLine(transferMsg);
-					receiveFile(fileName);
+					int i;
+					if(!send_recv_flag){
+						lcd_printSecondLine(receiveFileMsg);
+						receiveFile(fileName);
+					}
+					else{
+						lcd_printSecondLine(sendFileMsg);
+						UART_sendFile(sentFileIndex);
+						send_recv_flag = 0;
+					}
 				}
 			}
 		}
+	
 		if (msgDisplayed && readFileName) {
 
 		}

@@ -2,3 +2,4 @@
 
 void initDMA();
 void enableDMA();
+char getTempFile(int idx);

@@ -16,36 +16,38 @@ void receiveFile(char * fName) {
   // Allocating first place in files DS.
   int i;
   if (fileCount) {
-    for (i = fileCount - 2; i >= 0; i--) {
+    for (i = fileCount - 1; i >= 0; i--) {
       pFiles[i + 1] = pFiles[i];
     }
   }
 
-  pFile * file = (pFile * ) malloc(sizeof(pFile));
-  file -> size = currentFileSize;
+
+  pFiles[0].size = currentFileSize;
   int fileNameLen = strlen(fName);
-  file -> name = (char * ) malloc(strlen(fName));
+//  file -> name = (char * ) malloc(strlen(fName));
+  
+  strcpy(pFiles[0].name, fName);
+  pFiles[0].name[fileNameLen] = '\0';
+  
+  //  file -> content = (char * ) malloc(file -> size + 1);
 
-  strcpy(file -> name, fName);
+ tempFile[0] = receivedByte; // Last received byte should be the first byte of the file.
+  
+//  strcpy(file -> content, tempFile);
+//  file->content[file->size] = "\0";
+  memset(&(pFiles[0].content), 0, pFiles[0].size);
+   int j;
+  // int fileSize = file->size;
+   for (j = 0; j < MAX_FILE_SIZE; j++)
+     (pFiles[0].content)[j] = tempFile[j];
 
-  file -> content = (char * ) malloc(file -> size);
-
-  pFiles[0] = file;
-  tempFile[0] = receivedByte; // Last received byte should be the first byte of the file.
-
-  int j;
-  for (j = 0; j < file -> size; j++)
-    (file -> content)[j] = tempFile[j];
-
+//  strcpy(pFiles[0].content, tempFile);
+  pFiles[0].content[pFiles[0].size] = '\0';
+  
   fileCount = fileCount < BUFFER_SIZE ? fileCount + 1 : fileCount;
 
-  readFileName = 0;
-  enable_irq(INT_UART0 - 16); // Enable UART0 interrupt
-  readState = 0;
-  readMsgSize = 0;
-  msgSize = 0;
-  idx = 0;
-  msgDisplayed = 0;
+//  readFileName = 0;
+  
 }
 
 void extractFileSize(const int msgSize) {
@@ -69,15 +71,15 @@ void filesScrollMenu() {
   int firstFileIndex = scrollCounter;
   currentPointedFileIndex  = firstFileIndex;
   
-  scrollCounter = (++scrollCounter) % (fileCount-1);
+  scrollCounter = (++scrollCounter) % (fileCount);
   int secondFileIndex = scrollCounter;
   
   char str1[6];
-  my_itoa(pFiles[firstFileIndex] -> size, str1);
+  my_itoa(pFiles[firstFileIndex].size, str1);
   strcat(str1, "B\0");
   
   char str2[6];
-  my_itoa(pFiles[secondFileIndex] -> size, str2);
+  my_itoa(pFiles[secondFileIndex].size, str2);
   strcat(str2, "B\0");
   
   char firstFileName[MAX_LINE];
@@ -85,10 +87,10 @@ void filesScrollMenu() {
 //  int firstFileNameLen = strlen(pFiles[firstFileIndex] -> name);
 //  int secondFileNameLen = strlen(pFiles[secondFileIndex] -> name);
   
-  strcpy(firstFileName, pFiles[firstFileIndex] -> name);
+  strcpy(firstFileName, pFiles[firstFileIndex].name);
   strcat(firstFileName, str1);
   
-  strcpy(secondFileName, pFiles[secondFileIndex] -> name);
+  strcpy(secondFileName, pFiles[secondFileIndex].name);
   strcat(secondFileName, str2);
   
   int len1 = strlen(firstFileName);
@@ -105,3 +107,4 @@ char * my_itoa(const int num, char * str) {
   sprintf(str, "%d", num);
   return str;
 }
+

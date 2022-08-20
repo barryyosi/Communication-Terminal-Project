@@ -59,11 +59,12 @@ void lcd_printFile(const int fileIndex){
   int i = 0;
   
   for (i;i<MAX_MSG;i++){
-    if(indexInFile < (pFiles[fileIndex] -> size))
-        currentLineToPrint[i] = (pFiles[fileIndex]->content)[indexInFile++];
-  }
+    if(indexInFile < (pFiles[fileIndex].size)){  	
+        currentLineToPrint[i] = (pFiles[fileIndex].content)[indexInFile++];
+    }
+}
 
-  if(indexInFile >= (pFiles[fileIndex] -> size))
+  if(indexInFile >= (pFiles[fileIndex].size))
     indexInFile = 0;
 
   lcd_printNewLn(currentLineToPrint);

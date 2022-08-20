@@ -49,7 +49,7 @@ void initDMA() {
 
 void enableDMA() {
 
-  DMA_DAR0 = (uint32_t) & tempFile3; //destination
+  DMA_DAR0 =  &tempFile; //destination
   //	tempFile2 = (char*)malloc(currentFileSize);
   DMA_DSR_BCR0 = DMA_DSR_BCR_BCR(currentFileSize); // number of bytes to transfer
   DMAMUX0_CHCFG0 |= DMAMUX_CHCFG_ENBL_MASK; // Enable DMA channel 
@@ -65,8 +65,9 @@ void enableDMA() {
  * */
 void DMA0_IRQHandler(void) {
   //disable_irq(INT_DMA0 - 16);
-  tempFile3[0] = receivedByte; // Last received byte should be the first byte of the file.
-  tempFile3[currentFileSize] = '\0';
+  // tempFile3[0] = receivedByte; // Last received byte should be the first byte of the file.
+  // tempFile3[currentFileSize] = '\0';
+  receiveFile(fileName);	
   dmaIrqFlag = 1;
   DMA_DSR_BCR0 |= DMA_DSR_BCR_DONE_MASK; // Clear Done Flag
   DMAMUX0_CHCFG0 &= ~DMAMUX_CHCFG_ENBL_MASK; // Disable DMA Channel 0

@@ -58,7 +58,7 @@ void UART0_IRQHandler() {
           UART_readMessage();
         } else {
         	for (i = 0; i < fileCount; i++){
-        		if (!strcmp(fileName,pFiles[i]->name)){
+        		if (!strcmp(fileName,pFiles[i].name)){
         			send_recv_flag = 1;
         			sentFileIndex = i;
         			msgDisplayed = 1;
@@ -127,21 +127,21 @@ void UART_receiveFile() {
 }
 
 void UART_sendFile(int fileIndex) {
-  char * nameFrame = (char * ) malloc(strlen(pFiles[fileIndex] -> name) + 2);
-  strcpy(nameFrame, pFiles[fileIndex] -> name);
+  char * nameFrame = (char * ) malloc(strlen(pFiles[fileIndex].name) + 2);
+  strcpy(nameFrame, pFiles[fileIndex].name);
   strcat(nameFrame, "$\0");
   uart0_putstr(nameFrame);
   free(nameFrame);
 
 //  char * contentFrame = (char * ) malloc(pFiles[fileIndex] -> size + 2);
   char contentFrame[MAX_FILE_SIZE];
-  strcpy(contentFrame, pFiles[fileIndex] -> content);
+  strcpy(contentFrame, pFiles[fileIndex].content);
   
-  contentFrame[pFiles[fileIndex] -> size] = '$';
-  contentFrame[pFiles[fileIndex] -> size + 1] = '\0';
+  contentFrame[pFiles[fileIndex].size] = '$';
+  contentFrame[pFiles[fileIndex].size + 1] = '\0';
   
   uart0_putstr(contentFrame);
-  free(contentFrame);
+//  free(contentFrame);
   
   readFileName = 0;
   enable_irq(INT_UART0 - 16); // Enable UART0 interrupt

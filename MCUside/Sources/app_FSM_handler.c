@@ -78,7 +78,7 @@ void handleDevicesInterrupt(DeviceId deviceId) {
     case (fileTransferMode): {
       if (fileCount == 1) {
         char firstFileName[MAX_MSG];
-        strcpy(pFiles[0]->name, firstFileName);
+        strcpy(pFiles[0].name, firstFileName);
         lcd_printNewLn(firstFileName);
 
       } else if (fileCount >= 2) 

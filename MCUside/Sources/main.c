@@ -35,9 +35,9 @@ int main(void) {
 	bFile.size = 9;
 	cFile.size = 16;
 
-	pFiles[0] = &aFile;
-	pFiles[1] = &bFile;
-	pFiles[2] = &cFile;
+	pFiles[0] = aFile;
+	pFiles[1] = bFile;
+	pFiles[2] = cFile;
 	fileCount = 3;
 	while (1) {
 		wait();
@@ -53,7 +53,14 @@ int main(void) {
 					int i;
 					if(!send_recv_flag){
 						lcd_printSecondLine(receiveFileMsg);
-						receiveFile(fileName);
+						readFileName = 0;
+						enable_irq(INT_UART0 - 16); // Enable UART0 interrupt
+						readState = 0;
+						readMsgSize = 0;
+						msgSize = 0;
+						idx = 0;
+						msgDisplayed = 0;
+//						receiveFile(fileName);
 					}
 					else{
 						lcd_printSecondLine(sendFileMsg);

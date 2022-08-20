@@ -150,6 +150,7 @@ void UART_sendFile(int fileIndex) {
   msgSize = 0;
   idx = 0;
   msgDisplayed = 0;
+
 }
 
 void uart0_putchar(char ch) {
@@ -212,7 +213,7 @@ void InitUARTs() {
 //  UART0 - Selection of BR (Baud Rate) and OSR (Over Sampling Ratio)
 //--------------------------------------------------------------------
 void Uart0_Br_Sbr(int sysclk, int baud) {
-
+	
   uint8 i;
   uint32 calculated_baud = 0;
   uint32 baud_diff = 0;
@@ -243,8 +244,9 @@ void Uart0_Br_Sbr(int sysclk, int baud) {
   }
 
   // Initialize baud rate
-  baud_rate = baud;
-
+  baud_rate = baud == 38400 ? 19200 : baud;
+  //  baud_rate = baud;
+ 
   // Change units to Hz
   uart0clk = sysclk * 1000;
   // Calculate the first baud rate using the lowest OSR value possible.
@@ -310,7 +312,7 @@ void Uart0_Br_Sbr(int sysclk, int baud) {
   }
 
 }
-
+//f/((OSR+1)*BR)
 /********************************************************************/
 /*
  * Wait for a character to be received on the specified uart

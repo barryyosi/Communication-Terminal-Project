@@ -24,7 +24,7 @@ void inits() {
 	initLCD();
 	initRGBLed();
 	InitADCs();
-	InitPIT(1500);		// Setting pit for 2sec delay in order to allow switching between key character options.
+	InitPIT(1500);		// Setting pit for 1.5sec delay in order to allow switching between key character options.
 	
 	initDMA();
 	mcuTyping = 0;

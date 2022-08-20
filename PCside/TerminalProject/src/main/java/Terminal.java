@@ -164,20 +164,19 @@ public class Terminal {
             }
         }
     };
-//    private static Logger logger = new Logger("terminal_log");
 
     public static void initNewSerialPort(int baud) {
 //        if (sysPort != null && sysPort.isOpen()) {
 //            //closePort();
 //        }
-
+        int tempBaud = baud == 38400 ? 19200 : baud;
         sysPort.closePort();
         sysPort.openPort();
         sysPort.addDataListener(serialPortListener);
         sysPort.setParity(SerialPort.NO_PARITY);
         sysPort.setNumStopBits(STOP_BITS);
         sysPort.setNumDataBits(DATA_BITS);
-        sysPort.setBaudRate(baud);
+        sysPort.setBaudRate(tempBaud);
         String message = sysPort.toString() + " connected with baud-rate: " + baud + ", stop-bits: " + STOP_BITS + ", data-bits: " + DATA_BITS + " and no-parity.";
         JOptionPane.showMessageDialog(null, message);
 

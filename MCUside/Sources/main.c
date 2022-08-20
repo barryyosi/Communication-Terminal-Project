@@ -30,6 +30,8 @@ int main(void) {
 				char* updateBRMessage = "Updated BR: ";
 				lcd_printNewLn(updateBRMessage);
 				lcd_printSecondLine(message);
+				readBaudRateReady = 0;
+		
 			} else {
 				lcd_printNewLn(message);
 				if (readFileName) {

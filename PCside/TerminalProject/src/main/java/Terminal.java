@@ -86,21 +86,16 @@ public class Terminal {
 
                         if ((int) currentChar == EOS) {
                             mcuMessage[msgIndex++] = '\0';
-//                                System.out.println("Message: " + mcuMessage);
                             gui.chatPrint(gui.textArea, TerminalGUI.MCU, new String(mcuMessage));
                             mcuMessage = new char[MAX_STR_LEN];
                             msgIndex = 0;
                         } else if (((int) currentChar >= 65 && (int) currentChar <= 90) || (int) currentChar >= 48 && (int) currentChar <= 57)
                             mcuMessage[msgIndex++] = currentChar;
-
-                        //                            TODO - log it:
-                        //                             System.out.println(currentChar + " ascii value: " + (int) currentChar);
-                        //                        System.out.print(currentChar);
                     }
 
                 }
                 break;
-                case FileTransfer: // File Transfer mode - fileName or fileContent received.
+                case FileTransfer: // File Transfer mode - ACK, fileName or fileContent received.
                 {
                     for (int i = 0; i < newData.length; i++) {
                         currentChar = (char) newData[i];
@@ -128,6 +123,10 @@ public class Terminal {
                             } else if (((int) currentChar >= 65 && (int) currentChar <= 122) || (int) currentChar >= 46 && (int) currentChar <= 57 ) {
                                 System.out.println(tempFileName);
                                 tempFileName += currentChar;
+                                if(tempFileName.equals("ACK")){
+                                    tempFileName = "";
+                                    gui.showMessageDialog("File transfer complete.");
+                                }
                             }
                         }
 

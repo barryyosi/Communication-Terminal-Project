@@ -26,8 +26,10 @@ int main(void) {
 		updateState(tempState);
 		if (!msgDisplayed) {
 			if (getState() == terminalConfigMode && readBaudRateReady) {
-				int baudRate = atoi(message);
 				Uart0_Br_Sbr(CORE_CLOCK / 2 / 1000, atoi(message));
+				char* updateBRMessage = "Updated BR: ";
+				lcd_printNewLn(updateBRMessage);
+				lcd_printSecondLine(message);
 			} else {
 				lcd_printNewLn(message);
 				if (readFileName) {
@@ -42,6 +44,7 @@ int main(void) {
 						msgSize = 0;
 						idx = 0;
 						msgDisplayed = 0;
+						uart0_putstr("ACK");
 
 					}
 					else{

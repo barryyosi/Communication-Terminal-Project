@@ -59,8 +59,9 @@ void lcd_printFile(const int fileIndex){
   int i = 0;
   
   for (i;i<MAX_MSG;i++){
-    if(indexInFile < (pFiles[fileIndex].size)){  	
-        currentLineToPrint[i] = (pFiles[fileIndex].content)[indexInFile++];
+    if(indexInFile < (pFiles[fileIndex].size)){ 
+		currentLineToPrint[i] = (pFiles[fileIndex].content)[indexInFile] == '\r' || (pFiles[fileIndex].content)[indexInFile] == '\n' ? ' ' : (pFiles[fileIndex].content)[indexInFile];
+		indexInFile++;
     }
 }
 

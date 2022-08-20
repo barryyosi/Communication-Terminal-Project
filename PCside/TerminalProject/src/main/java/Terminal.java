@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 public class Terminal {
     private static final int MAX_STR_LEN = 32;
-    private static final int EOS = '$';     // End of string character.
+    private static final int EOS = '$'; // End of string character.
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
     protected static SerialPort sysPort;
@@ -72,8 +72,8 @@ public class Terminal {
                 case Chat: // Chat mode message.
                 {
                     for (int i = 0; i < newData.length; i++) {
-                        System.out.println(sysState.toString() + ") received:" + (char)newData[i]);
-                        currentChar = (char)newData[i];
+                        System.out.println(sysState.toString() + ") received:" + (char) newData[i]);
+                        currentChar = (char) newData[i];
 
                         if ((int) currentChar == EOS) {
                             mcuMessage[msgIndex++] = '\0';
@@ -111,10 +111,10 @@ public class Terminal {
                                     throw new RuntimeException(e);
                                 }
 
-                            } else if (((int) currentChar >= 65 && (int) currentChar <= 122) || (int) currentChar >= 46 && (int) currentChar <= 57 ) {
+                            } else if (((int) currentChar >= 65 && (int) currentChar <= 122) || (int) currentChar >= 46 && (int) currentChar <= 57) {
                                 System.out.println(tempFileName);
                                 tempFileName += currentChar;
-                                if(tempFileName.equals("ACK")){
+                                if (tempFileName.equals("ACK")) {
                                     tempFileName = "";
                                     gui.showMessageDialog("File transfer complete.");
                                 }
@@ -157,9 +157,9 @@ public class Terminal {
     };
 
     public static void initNewSerialPort(int baud) {
-//        if (sysPort != null && sysPort.isOpen()) {
-//            //closePort();
-//        }
+        //        if (sysPort != null && sysPort.isOpen()) {
+        //            //closePort();
+        //        }
         int tempBaud = baud == 38400 ? 19200 : baud;
         sysPort.closePort();
         sysPort.openPort();
@@ -203,7 +203,7 @@ public class Terminal {
 
     public static void sendFrame(String msg) {
         byte[] frame;
-        Integer stateOrdinal = sysState.ordinal();      // Each message syncs system state with MCU
+        Integer stateOrdinal = sysState.ordinal(); // Each message syncs system state with MCU
         String msgLength = String.format("%04d", (msg.length()));
         String frameString = stateOrdinal.toString() + msgLength + msg;
 

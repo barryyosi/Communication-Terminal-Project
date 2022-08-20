@@ -24,11 +24,6 @@ char printStr[MAX_MSG] = {
 int readStr_index = 0;
 int writeStrIdx = 0;
 int printStr_out_index = 0;
-
-// TODO - validate
-
-//char message[MAX_MSG] = {0};
-//char* pMessage;
 char receivedByte;
 int i = 0; // Test variable
 // File transfer testing variable
@@ -83,11 +78,7 @@ void UART0_IRQHandler() {
    
   }
   if (UART0_S1 & UART_S1_TDRE_MASK) { // TX buffer is empty and ready for sending
-    //			UART0_D = printStr[writeStrIdx++];
-    //			if ( printStr[writeStrIdx++] == "\0"){                  // TX over?
-    //				writeStrIdx = 0;
-    //				UART0_C2 &= ~UART_C2_TIE_MASK;
-    //			}
+}
   }
 
 }
@@ -119,9 +110,6 @@ void UART_readMessage() {
 void UART_receiveFile() {
   disable_irq(INT_UART0 - 16); // Disable UART0 interrupt
   enableDMA();
-  // TODO - enable file DMA transfer	
-  // Should ignore this case, DMA should handle it
-  // TODO - Also static int readFileName = 0;
   testFileTransfer++;
 
 }

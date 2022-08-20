@@ -1,6 +1,5 @@
 import com.fazecast.jSerialComm.SerialPort;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 
 public class TerminalGUI {
     JFrame terminalFrame;
@@ -104,7 +102,7 @@ public class TerminalGUI {
     }
     private void initChatModePanel() throws IOException {
         // Creating chat mode panel and adding relevant components.
-        textArea= new JTextArea(30, 30);
+        textArea = new JTextArea(30, 30);
 
         JLabel label = new JLabel("Enter Message");
         JTextField textField = new JTextField(15); // accepts upto 15 characters
@@ -113,7 +111,7 @@ public class TerminalGUI {
         send.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                chatPrint(textArea,PC, textField.getText());
+                chatPrint(textArea, PC, textField.getText());
                 String message = "PC:".concat(textField.getText());
                 Terminal.sendFrame(message);
                 textField.setText("");
@@ -128,16 +126,11 @@ public class TerminalGUI {
             }
         });
 
-
-//        BufferedImage mcuPushButtonReference = ImageIO.read(new File("src/main/Images/img3.jpeg"));
-//        JLabel pbRefLabel = new JLabel(new ImageIcon(mcuPushButtonReference));
-
         ChatModePanel.add(label);
         ChatModePanel.add(textField);
         ChatModePanel.add(send);
         ChatModePanel.add(reset);
-        ChatModePanel.add(BorderLayout.NORTH,textArea);
-//        ChatModePanel.add(pbRefLabel);
+        ChatModePanel.add(BorderLayout.NORTH, textArea);
 
     }
     private void initFileTransferModePanel() throws IOException {
@@ -150,9 +143,9 @@ public class TerminalGUI {
         // PC2MCU Files box.
         Box pcFilesBox = Box.createVerticalBox();
         JLabel pcLabel = new JLabel("PC2MCU Files");
-        DefaultListModel<File> pcf = new DefaultListModel<>();
-        for (File file : pcFiles) pcf.addElement(file);
-        JList<File> pcFileJList = new JList(pcf);
+        DefaultListModel < File > pcf = new DefaultListModel < > ();
+        for (File file: pcFiles) pcf.addElement(file);
+        JList < File > pcFileJList = new JList(pcf);
         pcFileJList.setPreferredSize(new Dimension(500, 200));
         pcFileJList.setVisibleRowCount(15);
         pcFilesBox.add(pcLabel);
@@ -161,9 +154,9 @@ public class TerminalGUI {
         // MCU2PC Files box.
         Box mcu2pcFilesBox = Box.createVerticalBox();
         JLabel mcu2pcLabel = new JLabel("MCU2PC Files");
-        DefaultListModel<File> mcu2pcf = new DefaultListModel<>();
-        for (File file : mcu2pcFiles) mcu2pcf.addElement(file);
-        JList<File> mcu2pcFileJList = new JList(mcu2pcf);
+        DefaultListModel < File > mcu2pcf = new DefaultListModel < > ();
+        for (File file: mcu2pcFiles) mcu2pcf.addElement(file);
+        JList < File > mcu2pcFileJList = new JList(mcu2pcf);
         pcFileJList.setPreferredSize(new Dimension(500, 200));
         mcu2pcFilesBox.add(mcu2pcLabel);
         mcu2pcFilesBox.add(mcu2pcFileJList);
@@ -171,9 +164,9 @@ public class TerminalGUI {
         // MCU Files box.
         Box mcuFilesBox = Box.createVerticalBox();
         JLabel mcuLabel = new JLabel("MCU Files");
-        DefaultListModel<File> mcuf = new DefaultListModel();
-        for (File file : mcuFiles) mcuf.addElement(file);
-        JList<File> mcuFileJList = new JList(mcuf);
+        DefaultListModel < File > mcuf = new DefaultListModel();
+        for (File file: mcuFiles) mcuf.addElement(file);
+        JList < File > mcuFileJList = new JList(mcuf);
         mcuFileJList.setPreferredSize(new Dimension(500, 200));
         mcuFilesBox.add(mcuLabel);
         mcuFilesBox.add(mcuFileJList);
@@ -187,14 +180,12 @@ public class TerminalGUI {
                 Terminal.pcFiles = new ArrayList < File > (Arrays.stream(Terminal.listOfFiles).toList());
                 pcFiles = Terminal.pcFiles.toArray(new File[0]);
                 pcf.removeAllElements();
-                for (File file : pcFiles) pcf.addElement(file);
-
+                for (File file: pcFiles) pcf.addElement(file);
 
                 Terminal.mcu2pcFiles = new ArrayList < File > (Arrays.stream(Terminal.MCU2PC.listFiles()).toList());
                 mcu2pcFiles = Terminal.mcu2pcFiles.toArray(new File[0]);
                 mcu2pcf.removeAllElements();
-                for (File file : mcu2pcFiles) mcu2pcf.addElement(file);
-
+                for (File file: mcu2pcFiles) mcu2pcf.addElement(file);
 
             }
 
@@ -206,7 +197,7 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 var selected = mcuFileJList.getSelectedValuesList();
-                for (File file : selected){
+                for (File file: selected) {
                     try {
                         Terminal.requestFile(file);
                     } catch (IOException ex) {
@@ -215,7 +206,6 @@ public class TerminalGUI {
 
                 }
 
-
             }
         });
         JButton moveToMCU = new JButton(" PC >> MCU ");
@@ -223,45 +213,50 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 var selected = pcFileJList.getSelectedValuesList();
-                for (File file : selected){
+                for (File file: selected) {
                     if (mcuf.contains(file))
                         JOptionPane.showMessageDialog(null, "File already exist in MCU");
                     else {
                         mcuf.addElement(file);
-                        try { Terminal.sendFile(file); }
-                        catch (IOException ex) { throw new RuntimeException(ex); }
-                    }
+                        try {
+                            Terminal.sendFile(file);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
+            }
         });
-
 
         transferBox.add(moveToMCU);
         transferBox.add(moveToPC);
-
 
         FileTransferPanel.add(reloadFiles);
         FileTransferPanel.add(pcFilesBox);
         FileTransferPanel.add(mcu2pcFilesBox);
         FileTransferPanel.add(transferBox);
         FileTransferPanel.add(mcuFilesBox);
-//        FileTransferPanel.add(pbRefLabel);
 
     }
     private void initTerminalConfigModePanel() {
 
         // Available baud rates and com ports.
-        String[] baudRates = {"2400", "9600", "19200", "38400"};
+        String[] baudRates = {
+                "2400",
+                "9600",
+                "19200",
+                "38400"
+        };
 
         SerialPort[] coms = Terminal.availablePorts;
 
         JLabel comLabel = new JLabel("COM ");
-        JComboBox comDropdown = new JComboBox<>(coms);
+        JComboBox comDropdown = new JComboBox < > (coms);
 
         comDropdown.setSize(comDropdown.getPreferredSize());
 
         JLabel baudLabel = new JLabel("Baud rate ");
-        JComboBox baudDropdown = new JComboBox<String>(baudRates);
+        JComboBox baudDropdown = new JComboBox < String > (baudRates);
         baudDropdown.setSize(comDropdown.getPreferredSize());
 
         JButton configButton = new JButton("Config");
@@ -269,14 +264,14 @@ public class TerminalGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                Terminal.sysBaudRate = Integer.parseInt((String)baudDropdown.getSelectedItem());
-                if(Terminal.sysPort != null) Terminal.sendFrame((Terminal.sysBaudRate).toString());
+                Terminal.sysBaudRate = Integer.parseInt((String) baudDropdown.getSelectedItem());
+                if (Terminal.sysPort != null) Terminal.sendFrame((Terminal.sysBaudRate).toString());
 
                 Terminal.sysPort = (SerialPort) comDropdown.getSelectedItem();
                 JOptionPane.showMessageDialog(null, "Communication port and baud rate updated.");
-                Terminal.initNewSerialPort(Terminal.sysBaudRate);   // Configuring a new serial port based on selected
-                                                                    // parameters.
-                if(!initialConfig){
+                Terminal.initNewSerialPort(Terminal.sysBaudRate); // Configuring a new serial port based on selected
+                // parameters.
+                if (!initialConfig) {
                     switchPane(SleepModePanel);
                     initialConfig = true;
                 }
@@ -331,18 +326,13 @@ public class TerminalGUI {
             }
         });
 
-//        BufferedImage mcuPushButtonReference = ImageIO.read(new File("src/main/Images/img2.jpeg"));
-//        JLabel pbRefLabel = new JLabel(new ImageIcon(mcuPushButtonReference));
-
         SleepModePanel.add(ChatModeButton);
         SleepModePanel.add(FileTransferButton);
         SleepModePanel.add(TerminalConfigButton);
-//        SleepModePanel.add(pbRefLabel);
+
     }
-    protected void chatPrint(JTextArea argTextArea,String messageCommitter, String msg) {
-        argTextArea.append( messageCommitter + ": " + msg +"\n");
-//        if(messageCommitter == PC)
-//            Terminal.sendFrame(msg);
+    protected void chatPrint(JTextArea argTextArea, String messageCommitter, String msg) {
+        argTextArea.append(messageCommitter + ": " + msg + "\n");
     }
     public TerminalGUI() throws IOException {
 
@@ -363,7 +353,7 @@ public class TerminalGUI {
         terminalFrame.repaint();
         terminalFrame.revalidate();
 
-        }
+    }
 
     public void showMessageDialog(String s) {
         JOptionPane.showMessageDialog(null, s);

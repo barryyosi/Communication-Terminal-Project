@@ -22,27 +22,6 @@ void handleDevicesInterrupt(DeviceId deviceId) {
   char messagePrefix[] = "MCU:";
   int messageSize;
   switch (deviceId) {
-    /*
-
-            // case PUSH_BUTTON_1:
-            //     state = state2;
-
-            // 	break;
-
-            // case PUSH_BUTTON_2:
-            //     state = state3;
-    		// 	break;
-
-            // case PUSH_BUTTON_3:
-            //     break;
-
-            // case SWITCH_0:
-            // case SWITCH_1:
-            // case SWITCH_2:
-            // case SWITCH_3:
-    		// 	//getSwitchesState();
-            // 	break;
-    */
   case KEYPAD_IRQ:
     if (getState() == chatMode) {
       if (mcuTyping != 1) {
@@ -56,9 +35,8 @@ void handleDevicesInterrupt(DeviceId deviceId) {
         lcd_putchar2(keyPressed);
         pitEnable();
         currentMessageChar = keyPressed;
-        
+
       }
-      
 
     }
     break;
@@ -73,35 +51,40 @@ void handleDevicesInterrupt(DeviceId deviceId) {
       memset( & mcuMessage[0], 0, sizeof(mcuMessage));
       lcd_clear();
       mcuTyping = 0;
-    } break;
-    
+    }
+    break;
+
     case (fileTransferMode): {
       if (fileCount == 1) {
         char firstFileName[MAX_MSG];
         strcpy(pFiles[0].name, firstFileName);
         lcd_printNewLn(firstFileName);
 
-      } else if (fileCount >= 2) 
-          filesScrollMenu();
-    }break;
+      } else if (fileCount >= 2)
+        filesScrollMenu();
+    }
+    break;
 
     default:
       break;
-    } break;
-  
+    }
+    break;
+
   case PUSH_BUTTON_1:
-    switch(getState()){
-      case fileTransferMode:
-          lcd_printFile(currentPointedFileIndex);
-    } break;
-    
-   case PUSH_BUTTON_2:
-	switch(getState()){
-	  case fileTransferMode:
-		  UART_sendFile(currentPointedFileIndex);
-	} break;
+    switch (getState()) {
+    case fileTransferMode:
+      lcd_printFile(currentPointedFileIndex);
+    }
+    break;
+
+  case PUSH_BUTTON_2:
+    switch (getState()) {
+    case fileTransferMode:
+      UART_sendFile(currentPointedFileIndex);
+    }
+    break;
   default:
-      break;
+    break;
 
   }
 }
@@ -130,7 +113,7 @@ void enterState(FSMstate state) {
   break;
 
   case fileTransferMode: {
-	  
+
   }
   break;
 
@@ -149,12 +132,12 @@ void exitState(FSMstate state) {
   break;
 
   case fileTransferMode: {
-	  fileTransferReady = 0;
+    fileTransferReady = 0;
   }
   break;
 
   case terminalConfigMode: {
-	  terminalConfigReady = 0;
+    terminalConfigReady = 0;
   }
   break;
 

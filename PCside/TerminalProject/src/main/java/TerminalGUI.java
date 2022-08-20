@@ -154,6 +154,7 @@ public class TerminalGUI {
         for (File file : pcFiles) pcf.addElement(file);
         JList<File> pcFileJList = new JList(pcf);
         pcFileJList.setPreferredSize(new Dimension(500, 200));
+        pcFileJList.setVisibleRowCount(15);
         pcFilesBox.add(pcLabel);
         pcFilesBox.add(pcFileJList);
 
@@ -235,8 +236,8 @@ public class TerminalGUI {
         });
 
 
-        transferBox.add(moveToPC);
         transferBox.add(moveToMCU);
+        transferBox.add(moveToPC);
 
 
         FileTransferPanel.add(reloadFiles);

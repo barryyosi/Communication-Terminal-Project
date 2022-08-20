@@ -1,6 +1,5 @@
 import com.fazecast.jSerialComm.*;
 
-
 import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
@@ -8,13 +7,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
-//import org.slf4j.Logger;
-
-// TODO - Implement receive method.
 public class Terminal {
     private static final int MAX_STR_LEN = 32;
-    private static final int EOS = '$'; // nd of string character.
+    private static final int EOS = '$';     // End of string character.
     public static SerialPort[] availablePorts = SerialPort.getCommPorts();
 
     protected static SerialPort sysPort;
@@ -33,12 +28,8 @@ public class Terminal {
     }
     public static State sysState = State.Sleep;
 
-    //    public static File filesDir = new File("src/main/Files");
-    //    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\university\\3rd year\\Semester B\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
-    // TODO - Make filesDir more OS generic
     public static File MCU2PC = new File("PCside/TerminalProject/src/main/MCU2PC");
     public static File filesDir = new File("PCside/TerminalProject/src/main/PC2MCU");
-    //    public static File filesDir = new File("C:\\Users\\bary_\\Documents\\University\\DCS\\Communication-Terminal-Project\\PCside\\TerminalProject\\src\\main\\Files");
 
     public static File[] listOfFiles = filesDir.listFiles();
     public static ArrayList < File > pcFiles = new ArrayList < File > (Arrays.stream(listOfFiles).toList());
@@ -212,26 +203,16 @@ public class Terminal {
 
     public static void sendFrame(String msg) {
         byte[] frame;
-        Integer stateOrdinal = sysState.ordinal(); // Each message syncs system state with MCU
+        Integer stateOrdinal = sysState.ordinal();      // Each message syncs system state with MCU
         String msgLength = String.format("%04d", (msg.length()));
         String frameString = stateOrdinal.toString() + msgLength + msg;
 
         frame = frameString.toString().getBytes();
         System.out.println(frameString.toString());
-        // Debug: Printing sent frame
-        /*        for (byte argByte:frame) {
-            System.out.print(((char)argByte) +"(" + argByte + ")" + "\t");
-        }
-*/
         sysPort.writeBytes(frame, frame.length);
 
-        // TODO - Implement Ack receive.
-        // while(sysPort.readBytes){}
     }
     Terminal() {}
-    public static void main(String[] args) throws IOException {
-
-
-    }
+    public static void main(String[] args) {}
 
 }

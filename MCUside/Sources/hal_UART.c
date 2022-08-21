@@ -32,7 +32,7 @@ int testFileTransfer = 0; // File transfer testing variable
 void UART0_IRQHandler() {
   char temp;
 
-  if (UART0_S1 & UART_S1_RDRF_MASK) { // RX buffer is full and ready for reading	
+  if (UART0_S1 & UART_S1_RDRF_MASK) { // RX buffer is full and ready for reading
     receivedByte = UART0_D;
     if (!readState) {
       tempState = receivedByte - '0';
@@ -67,7 +67,7 @@ void UART0_IRQHandler() {
         	}
         }
         break;
- 	 
+
       default:
         UART_readMessage();
         break;
@@ -75,13 +75,12 @@ void UART0_IRQHandler() {
 
     }
 
-   
   }
   if (UART0_S1 & UART_S1_TDRE_MASK) { // TX buffer is empty and ready for sending
-}
+    // TODO check if compiled
   }
-
 }
+
 void UART_readMessage() {
   message[(idx++) % MAX_MSG] = receivedByte;
   if (idx == (msgSize)) {
@@ -97,7 +96,7 @@ void UART_readMessage() {
     	terminalConfigReady = 1;
     else if (getState() == terminalConfigMode && !readBaudRateReady)
 	    readBaudRateReady = 1;
-    
+
     readState = 0;
     readMsgSize = 0;
     msgSize = 0;
@@ -124,13 +123,13 @@ void UART_sendFile(int fileIndex) {
 //  char * contentFrame = (char * ) malloc(pFiles[fileIndex] -> size + 2);
   char contentFrame[MAX_FILE_SIZE];
   strcpy(contentFrame, pFiles[fileIndex].content);
-  
+
   contentFrame[pFiles[fileIndex].size] = '$';
   contentFrame[pFiles[fileIndex].size + 1] = '\0';
-  
+
   uart0_putstr(contentFrame);
 //  free(contentFrame);
-  
+
   readFileName = 0;
   enable_irq(INT_UART0 - 16); // Enable UART0 interrupt
   readState = 0;
@@ -201,7 +200,7 @@ void InitUARTs() {
 //  UART0 - Selection of BR (Baud Rate) and OSR (Over Sampling Ratio)
 //--------------------------------------------------------------------
 void Uart0_Br_Sbr(int sysclk, int baud) {
-	
+
   uint8 i;
   uint32 calculated_baud = 0;
   uint32 baud_diff = 0;
@@ -234,7 +233,7 @@ void Uart0_Br_Sbr(int sysclk, int baud) {
   // Initialize baud rate
   baud_rate = baud == 38400 ? 19200 : baud;
   //  baud_rate = baud;
- 
+
   // Change units to Hz
   uart0clk = sysclk * 1000;
   // Calculate the first baud rate using the lowest OSR value possible.

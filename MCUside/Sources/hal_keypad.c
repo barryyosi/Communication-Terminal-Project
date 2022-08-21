@@ -51,18 +51,18 @@ void initKeypad() {
 	PORTC_PCR4 = (PORT_PCR_MUX(1) | PORT_PCR_PE(1)); // PTC4
 	PORTC_PCR5 = (PORT_PCR_MUX(1) | PORT_PCR_PE(1)); // PTC5
 	PORTC_PCR6 = (PORT_PCR_MUX(1) | PORT_PCR_PE(1)); // PTC6
-	
+
 	memset(&keypadPressCounters, 0, sizeof(keypadPressCounters));
 
 }
 
 char keypad_scan(void)
 {
-		
+
 		char currentlyPressedKey = 'z';
-		
-	
-		
+
+
+
 		GPIOC_PDOR &= (~ROW1 & ~ROW2 & ~ROW3 & ~ROW4);
 
 		// If column pin is detected LOW, scan the column
@@ -80,7 +80,7 @@ char keypad_scan(void)
 
 		switch (currentlyPressedKey)
 		{
-		case 0: return pickCharacter(0);			
+		case 0: return pickCharacter(0);
 		case 1: return pickCharacter(1);
 		case 2: return pickCharacter(2);
 		case 3: return pickCharacter(3);
@@ -106,19 +106,20 @@ char keypad_scan(void)
 }
 char pickCharacter(int idx){
 	char retChar;
-	if (keypadPressCounters[idx] != 0)		// If not first press, use next char option		
+	if (keypadPressCounters[idx] != 0)		// If not first press, use next char option
 		lcd_cmd(0x10);						// Move cursor left
 	else {
+		// TODO nullify array keypadPressCounters
 		mcuMessage[idxInMcuMessage - 1] = currentMessageChar;
 		idxInMcuMessage++;					// If first-press than the character will be stored in a new index within the message sent by MCU.
 	}
-	if (idx != 11 && idx != 15)		
+	if (idx != 11 && idx != 15)
 		retChar = charOptions[idx][keypadPressCounters[idx] % 2];			// For keys other than key_11 and key_15, there are 2 character options.
 	else
 		retChar = charOptions[idx][keypadPressCounters[idx] % 3];			// For key_11 and key_15 there are 3 character options.
 
 	keypadPressCounters[idx]++;
-	
+
 	return retChar;
 }
 int search_col(uint32_t col)

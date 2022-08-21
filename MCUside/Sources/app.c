@@ -10,7 +10,9 @@ void receiveFile(char * fName) {
 
   int i;
   if (fileCount) {
-    for (i = fileCount - 1; i >= 0; i--) {
+    if(fileCount > 9) i = 8;  // TODO: check
+    else i = fileCount - 1;
+    for (; i >= 0; i--) {
       pFiles[i + 1] = pFiles[i];
     }
   }

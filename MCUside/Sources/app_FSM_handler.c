@@ -89,6 +89,7 @@ void handleDevicesInterrupt(DeviceId deviceId) {
     break;
 
   }
+  DelayMs(100);
 }
 
 void setState(FSMstate argState) {

@@ -53,33 +53,34 @@ void filesScrollMenu() {
 
   static int scrollCounter = 0;
 
-  int firstFileIndex = scrollCounter;
-  currentPointedFileIndex = firstFileIndex;
-
-  scrollCounter = (++scrollCounter) % (fileCount);
-  int secondFileIndex = scrollCounter;
-
-  char str1[6];
-  my_itoa(pFiles[firstFileIndex].size, str1);
-  strcat(str1, "B\0");
-
-  char str2[6];
-  my_itoa(pFiles[secondFileIndex].size, str2);
-  strcat(str2, "B\0");
-
+  int firstFileIndex = scrollCounter, secondFileIndex;
   char firstFileName[MAX_LINE];
   char secondFileName[MAX_LINE];
+  char fileSize[6];
 
-  strcpy(firstFileName, pFiles[firstFileIndex].name);
-  strcat(firstFileName, str1);
+  currentPointedFileIndex = firstFileIndex;
 
-  strcpy(secondFileName, pFiles[secondFileIndex].name);
-  strcat(secondFileName, str2);
+  if(fileCount == 0){
+    lcd_printFirstLine("no files");
+  }
+  else{
+    strcpy(firstFileName, pFiles[firstFileIndex].name);
+    my_itoa(pFiles[firstFileIndex].size, fileSize);
+    strcat(firstFileName, fileSize);
+    strcat(firstFileName, "B\0");
+    lcd_printFirstLine(firstFileName);
 
-  int len1 = strlen(firstFileName);
-  int len2 = strlen(secondFileName);
-  lcd_printFirstLine(firstFileName);
-  lcd_printSecondLine(secondFileName);
+    if(fileCount >= 2){
+      scrollCounter = (++scrollCounter) % (fileCount);
+      secondFileIndex = scrollCounter;
+
+      strcpy(secondFileName, pFiles[secondFileIndex].name);
+      my_itoa(pFiles[secondFileIndex].size, fileSize);
+      strcat(secondFileName, fileSize);
+      strcat(secondFileName, "B\0");
+      lcd_printSecondLine(secondFileName);
+    }
+  }
 }
 
 char * my_itoa(const int num, char * str) {

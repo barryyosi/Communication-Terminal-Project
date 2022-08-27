@@ -34,6 +34,8 @@ void handleDevicesInterrupt(DeviceId deviceId) {
       if (keyPressed != 'z') { // Avoiding undefined char.
         lcd_putchar2(keyPressed);
         pitEnable();
+        // TODO check if PIT counter is reset to init value on enable/disable
+        //      on every key pressed reset the PIT counter
         currentMessageChar = keyPressed;
 
       }

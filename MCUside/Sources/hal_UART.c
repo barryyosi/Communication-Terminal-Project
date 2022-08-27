@@ -62,7 +62,8 @@ void UART0_IRQHandler() {
         	}
         	if(!send_recv_flag){
 			  disable_irq(INT_UART0 - 16); // Disable UART0 interrupt
-			  enableDMA();
+			  if (ableToReceiveFile)
+				  enableDMA();
 			  msgDisplayed = 1;
         	}
         }
@@ -90,6 +91,7 @@ void UART_readMessage() {
     else if (getState() == fileTransferMode && !readFileName) {
       extractFileSize(msgSize);
       strcpy(fileName, message);
+      
       readFileName = 1;
     }
     else if (getState() == terminalConfigMode && !terminalConfigReady)
@@ -107,9 +109,9 @@ void UART_readMessage() {
 }
 
 void UART_receiveFile() {
-  disable_irq(INT_UART0 - 16); // Disable UART0 interrupt
+  disable_irq(INT_UART0 - 16); // Disable UART0 interrupt	  
   enableDMA();
-  testFileTransfer++;
+  
 
 }
 

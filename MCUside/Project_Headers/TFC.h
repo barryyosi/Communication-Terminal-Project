@@ -3,7 +3,7 @@
 #define TFC_H_
 #define MAX_MSG 32
 #define MAX_LINE 16
-#define FILES_LIMIT 10
+#define FILES_LIMIT 20
 #define MAX_FILE_SIZE 1000
 #include <stdint.h>
 #include <stdio.h>
@@ -55,13 +55,12 @@ int dmaIrqFlag;
 typedef struct pFile{
     int size;
     char name[MAX_MSG];
-    char content[MAX_FILE_SIZE];
+    char* content;
 } pFile;
 
 pFile pFiles[FILES_LIMIT];
-// char* files[20];
-// char* fileNames[20];
-char tempFile[MAX_FILE_SIZE];
+
+char tempFile;
 
 char* tempFile2;
 int fileSizes[20];
@@ -70,6 +69,7 @@ int currentFileSize;
 int currentPointedFileIndex;
 int sentFileIndex;
 int send_recv_flag;	// 0 -> receive file, 1 -> file sent
+int ableToReceiveFile;
 
 int terminalConfigReady;
 int readBaudRateReady;

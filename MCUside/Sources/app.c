@@ -6,35 +6,27 @@
 
 #define BUFFER_SIZE 10
 
+int currentlyLeftSpace;
+
+int getCurrentlyLeftSpace() {
+  return currentlyLeftSpace;
+}
+
+void setCurrentlyLeftSpace(int newSpace) {
+  currentlyLeftSpace = newSpace;
+}
+
+
 void receiveFile(char * fName) {
-
-  int i;
-  if (fileCount) {
-    if(fileCount > 9) i = 8;  // TODO: check
-    else i = fileCount - 1;
-    for (; i >= 0; i--) {
-      pFiles[i + 1] = pFiles[i];
-    }
-  }
-
-  pFiles[0].size = currentFileSize;
-  int fileNameLen = strlen(fName);
-
-  strcpy(pFiles[0].name, fName);
-  pFiles[0].name[fileNameLen] = '\0';
-
-  tempFile[0] = receivedByte; // Last received byte should be the first byte of the file.
-
-  memset( & (pFiles[0].content), 0, pFiles[0].size);
-  int j;
-
-  for (j = 0; j < MAX_FILE_SIZE; j++)
-    (pFiles[0].content)[j] = tempFile[j];
-
-  pFiles[0].content[pFiles[0].size] = '\0';
-
-  fileCount = fileCount < BUFFER_SIZE ? fileCount + 1 : fileCount;
-
+	
+	if(currentFileSize < getCurrentlyLeftSpace())	// File can be pushed into the array w/o overflowing
+		put_pFile(currentFileSize, fName, tempFile2);
+	
+	else if (fileCount && currentFileSize < (getCurrentlyLeftSpace() - pFiles[fileCount - 1].size)){
+		free(pFiles[fileCount - 1].content);
+		setCurrentlyLeftSpace( getCurrentlyLeftSpace() + pFiles[fileCount - 1].size);
+		put_pFile(currentFileSize, fName, tempFile2);
+	}
 }
 
 void extractFileSize(const int msgSize) {
@@ -49,7 +41,12 @@ void extractFileSize(const int msgSize) {
   }
 
   currentFileSize = atoi(tempFileSize);
-
+  
+  if ((fileCount > 0) && (currentFileSize > (getCurrentlyLeftSpace() - pFiles[fileCount - 1].size)))
+	  ableToReceiveFile = 0;
+  else
+	  ableToReceiveFile = 1;
+	  
 }
 
 void filesScrollMenu() {
@@ -91,4 +88,22 @@ char * my_itoa(const int num, char * str) {
   }
   sprintf(str, "%d", num);
   return str;
+}
+
+void put_pFile(const int argFileSize, const char* argFileName, char* argFileContent){
+	int i;
+	if(fileCount){
+		for (i = fileCount - 1; i >= 0; i--)
+			pFiles[i+1] = pFiles[i];
+	}
+	pFiles[0].size = argFileSize;
+	
+	strcpy(pFiles[0].name, argFileName);
+	pFiles[0].name[strlen(argFileName)] = '\0';
+	
+	argFileContent[0] = receivedByte; // Last received byte should be the first byte of the file.
+	pFiles[0].content = argFileContent;
+	pFiles[0].content[argFileSize] = '\0';
+	fileCount++;
+	setCurrentlyLeftSpace(getCurrentlyLeftSpace() - argFileSize);
 }

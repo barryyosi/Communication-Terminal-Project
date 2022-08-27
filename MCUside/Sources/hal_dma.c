@@ -50,9 +50,12 @@ void initDMA() {
 }
 
 void enableDMA() {
-
-  DMA_DAR0 = & tempFile; //destination
-  //	tempFile2 = (char*)malloc(currentFileSize);
+  
+  tempFile2 = (char*)malloc(currentFileSize + 1);
+  if (tempFile2 == NULL)	
+	  lcd_printNewLn("MALLOC ERROR");
+  DMA_DAR0 = tempFile2; //destination
+  	
   DMA_DSR_BCR0 = DMA_DSR_BCR_BCR(currentFileSize); // number of bytes to transfer
   DMAMUX0_CHCFG0 |= DMAMUX_CHCFG_ENBL_MASK; // Enable DMA channel
   UART0_C5 |= UART0_C5_RDMAE_MASK; // Enable DMA request for UART0 receiver; }		// Enable interrupt

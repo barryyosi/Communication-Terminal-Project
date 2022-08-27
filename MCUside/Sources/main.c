@@ -9,6 +9,7 @@
 #define CORE_CLOCK 48000000
 
 const char receiveFileMsg[] = "received";
+const char noSpaceMsg[] = "is too large";
 const char sendFileMsg[] = "being sent";
 
 int main(void) {
@@ -22,6 +23,7 @@ int main(void) {
   terminalConfigReady = 0;
   readBaudRateReady = 0;
   send_recv_flag = 0;
+  setCurrentlyLeftSpace(10000);
   inits();
 
   while (1) {
@@ -40,21 +42,31 @@ int main(void) {
         if (readFileName) {
           lcd_printNewLn(fileName);
           int i;
-          if (!send_recv_flag) {
-            lcd_printSecondLine(receiveFileMsg);
-            readFileName = 0;
-            enable_irq(INT_UART0 - 16); // Enable UART0 interrupt
-            readState = 0;
-            readMsgSize = 0;
-            msgSize = 0;
-            idx = 0;
-            msgDisplayed = 0;
-            uart0_putstr("ACK");
+          if (!ableToReceiveFile){
+              lcd_printSecondLine(noSpaceMsg);
+//              enable_irq(INT_UART0 - 16); // Enable UART0 interrupt	// Perhaps needs to be removed
+              readFileName = 0;
+              readState = 0;
+              readMsgSize = 0;
+              msgSize = 0;
+              idx = 0;
+              msgDisplayed = 0;
+              uart0_putstr("NOSPACE");
+          } else if (!send_recv_flag) {		// send_recv_flag -> '0' for receive, '1' for send
+				lcd_printSecondLine(receiveFileMsg);
+				readFileName = 0;
+//				enable_irq(INT_UART0 - 16); // Enable UART0 interrupt
+				readState = 0;
+				readMsgSize = 0;
+				msgSize = 0;
+				idx = 0;
+				msgDisplayed = 0;
+				uart0_putstr("ACK");
 
           } else {
-            lcd_printSecondLine(sendFileMsg);
-            UART_sendFile(sentFileIndex);
-            send_recv_flag = 0;
+				lcd_printSecondLine(sendFileMsg);
+				UART_sendFile(sentFileIndex);
+				send_recv_flag = 0;
           }
         }
       }

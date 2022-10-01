@@ -6,4 +6,4 @@ PC interface with UART using jSerialComm libaray.
 
 KL25Z embedded code written in C.
 
-# Project within Digital Computers Structure (Embedded Systems) course
+Project within Digital Computers Structure (Embedded Systems) course
